@@ -1,0 +1,219 @@
+ut4_casa
+{
+g_gear FGHIJKLMNZacefghijklOQRSTUVWX
+g_gametype 0
+timelimit 30
+g_swaproles 0
+g_instagib 0
+mod_gameType 11
+mod_gungame 1
+mod_ctf 0
+}
+
+ghzone-xmas
+{
+g_gear 0
+g_gametype 7
+timelimit 15
+g_swaproles 0
+g_instagib 0
+mod_gameType 7
+mod_gungame 0
+mod_allowWeapLink 1
+mod_allowWeapDrop 1
+mod_ctf 0
+}
+
+ut4_provinggrounds_
+{
+g_gear 0
+g_gametype 7
+timelimit 15
+g_swaproles 0
+g_instagib 0
+mod_gameType 7
+mod_gungame 0
+mod_allowWeapLink 1
+mod_allowWeapDrop 1
+mod_ctf 0
+}
+
+ut4_1upfun1_v2
+{
+g_gear 0
+g_gametype 7
+timelimit 15
+g_swaproles 0
+g_instagib 0
+mod_gameType 7
+mod_gungame 0
+mod_allowWeapLink 1
+mod_allowWeapDrop 1
+mod_ctf 0
+}
+
+ut_druglord3_fix
+{
+g_gear 0
+g_gametype 7
+timelimit 15
+g_swaproles 0
+g_instagib 0
+mod_gameType 7
+mod_gungame 0
+mod_allowWeapLink 1
+mod_allowWeapDrop 1
+mod_ctf 0
+}
+
+ut4_docks
+{
+g_gear KQS
+g_gametype 7
+timelimit 15
+g_swaproles 0
+g_instagib 0
+mod_gameType 7
+mod_gungame 0
+mod_allowWeapLink 1
+mod_allowWeapDrop 1
+mod_ctf 1
+}
+
+ut4_uptowncity_b4
+{
+g_gear 0
+g_gametype 7
+timelimit 15
+g_swaproles 0
+g_instagib 0
+mod_gameType 7
+mod_gungame 0
+mod_allowWeapLink 1
+mod_allowWeapDrop 1
+mod_ctf 1
+}
+
+ut4_mykonos_a17
+{
+g_gear QS
+g_gametype 7
+timelimit 15
+g_swaproles 0
+g_instagib 0
+mod_gameType 7
+mod_gungame 0
+mod_allowWeapLink 1
+mod_allowWeapDrop 1
+mod_ctf 0
+}
+
+ut4_twins_beta3
+{
+g_gear 0
+g_gametype 7
+timelimit 15
+g_swaproles 0
+g_instagib 0
+mod_gameType 7
+mod_gungame 0
+mod_allowWeapLink 1
+mod_allowWeapDrop 1
+mod_ctf 1
+}
+
+ut4_slumwar
+{
+g_gear KQS
+g_gametype 7
+timelimit 15
+g_swaproles 0
+g_instagib 0
+mod_gameType 7
+mod_gungame 0
+mod_allowWeapLink 1
+mod_allowWeapDrop 1
+mod_ctf 0
+}
+
+ut4_killhouse_b8
+{
+g_gear KQS
+g_gametype 7
+timelimit 15
+g_swaproles 0
+g_instagib 0
+mod_gameType 7
+mod_gungame 0
+mod_allowWeapLink 1
+mod_allowWeapDrop 1
+mod_ctf 0
+}
+
+ut4_venice_b7
+{
+g_gear 0
+g_gametype 7
+timelimit 15
+g_swaproles 0
+g_instagib 0
+mod_gameType 7
+mod_gungame 0
+mod_allowWeapLink 1
+mod_allowWeapDrop 1
+mod_ctf 0
+}
+
+ut4_rctf8
+{
+g_gear KQS
+g_gametype 7
+timelimit 15
+g_swaproles 0
+g_instagib 0
+mod_gameType 7
+mod_gungame 0
+mod_allowWeapLink 1
+mod_allowWeapDrop 1
+mod_ctf 0
+}
+
+ut4_sliema
+{
+g_gear FGHIJKLMNZacefghijklOQRSTUVWX
+g_gametype 0
+timelimit 30
+g_swaproles 0
+g_instagib 0
+mod_gameType 11
+mod_gungame 1
+mod_ctf 0
+}
+
+ut4_kaysersberg_a2
+{
+g_gear KQS
+g_gametype 7
+timelimit 15
+g_swaproles 0
+g_instagib 0
+mod_gameType 7
+mod_gungame 0
+mod_allowWeapLink 1
+mod_allowWeapDrop 1
+mod_ctf 0
+}
+
+ut_lostbase_fix
+{
+g_gear 0
+g_gametype 7
+timelimit 15
+g_swaproles 0
+g_instagib 0
+mod_gameType 7
+mod_gungame 0
+mod_allowWeapLink 1
+mod_allowWeapDrop 1
+mod_ctf 0
+}
