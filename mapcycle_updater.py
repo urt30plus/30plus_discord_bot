@@ -43,7 +43,9 @@ def find_mapcycle_message(
 
 def create_mapcycle_embed(mapcycle_file: str) -> discord.Embed:
     cycle = MapCycleParser().parse(mapcycle_file)
-    description = '\n'.join([f'{k} {map_mode(v)}' for k, v in cycle.items()])
+    description = '\n'.join(
+        [f'{k.rstrip("_")} {map_mode(v)}' for k, v in cycle.items()]
+    )
     embed = discord.Embed(
         title=EMBED_MAPCYCLE_TITLE,
         description=description,
