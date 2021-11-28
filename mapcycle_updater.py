@@ -53,7 +53,10 @@ def create_mapcycle_embed(mapcycle_file: str) -> discord.Embed:
     )
     now = datetime.datetime.now(tz=datetime.timezone.utc)
     embed.set_footer(
-        text=f'\nTotal Maps: {len(cycle)}\nLast Updated: {now.isoformat()}'
+        text=(
+            f'\nTotal Maps: {len(cycle)}'
+            f'\nLast Updated: {now.strftime("%Y-%m-%d %H:%M %Z")}'
+        )
     )
     return embed
 
