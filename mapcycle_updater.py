@@ -6,7 +6,8 @@ from typing import Dict, List, Optional
 import discord
 
 import bot30
-from bot30.clients import Bot30Client, QuakeGameType
+from bot30.clients import Bot30Client
+from bot30.models import QuakeGameType
 from bot30.parsers import MapCycleParser
 
 logger = logging.getLogger('bot30.mapcycle')
