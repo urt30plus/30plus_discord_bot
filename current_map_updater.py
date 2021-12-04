@@ -6,7 +6,6 @@ import discord
 
 import bot30
 from bot30.clients import Bot30Client, QuakeClient
-from bot30.models import QuakePlayers
 
 logger = logging.getLogger('bot30.current_map')
 
@@ -14,7 +13,10 @@ EMBED_CURRENT_MAP_TITLE = 'Current Map'
 EMBED_CURRENT_MAP_COLOR = discord.Color.dark_red()
 
 
-def create_mapcycle_embed(players: QuakePlayers) -> discord.Embed:
+async def create_mapcycle_embed() -> discord.Embed:
+    logger.info('Creating current map embed')
+    async with QuakeClient(bot30.GAME_SERVER_IP, bot30.GAME_SERVER_PORT) as qc:
+        players = await qc.players(bot30.GAME_SERVER_RCON_PASS)
     embed = discord.Embed(
         title=EMBED_CURRENT_MAP_TITLE,
         description=players.mapname,
@@ -64,16 +66,12 @@ def create_mapcycle_embed(players: QuakePlayers) -> discord.Embed:
 
 async def update_current_map(client: Bot30Client) -> None:
     await client.login(bot30.BOT_TOKEN)
-    channel = await client.channel_by_name(bot30.CHANNEL_NAME_MAPCYCLE)
-    message = await client.find_message_by_embed_title(
-        channel=channel,
-        embed_title=EMBED_CURRENT_MAP_TITLE,
-        limit=3,
+    channel_message, embed = await asyncio.gather(
+        client.fetch_embed_message(bot30.CHANNEL_NAME_MAPCYCLE,
+                                   EMBED_CURRENT_MAP_TITLE),
+        create_mapcycle_embed(),
     )
-    logger.info('Creating current map embed')
-    async with QuakeClient(bot30.GAME_SERVER_IP, bot30.GAME_SERVER_PORT) as qc:
-        players = await qc.players(bot30.GAME_SERVER_RCON_PASS)
-    embed = create_mapcycle_embed(players)
+    channel, message = channel_message
     if message:
         logger.info('Updating existing message: %s', message.id)
         await message.edit(embed=embed)

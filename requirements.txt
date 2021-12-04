@@ -1,3 +1,4 @@
 discord.py==1.7.3
 asyncio-dgram==2.1.0
 python-dotenv==0.19.2
+aiofiles==0.8.0

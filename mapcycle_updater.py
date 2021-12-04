@@ -3,12 +3,12 @@ import datetime
 import logging
 from typing import Dict
 
+import aiofiles
 import discord
 
 import bot30
 from bot30.clients import Bot30Client
 from bot30.models import QuakeGameType
-from bot30.parsers import MapCycleParser
 
 logger = logging.getLogger('bot30.mapcycle')
 
@@ -32,8 +32,32 @@ def map_mode(map_opts: Dict[str, str]) -> str:
         return f'({result})'
 
 
-def create_mapcycle_embed(mapcycle_file: str) -> discord.Embed:
-    cycle = MapCycleParser().parse(mapcycle_file)
+async def parse_mapcycle(mapcycle_file: str) -> Dict[str, Dict]:
+    result = {}
+    map_opts = None
+    last_map = None
+    async with aiofiles.open(mapcycle_file, mode='r', encoding='utf-8') as f:
+        async for line in f:
+            line = line.strip()
+            if not line or line.startswith('//'):
+                continue
+            elif line == '{':
+                map_opts = {}
+            elif line == '}':
+                result[last_map] = map_opts
+                map_opts = None
+            elif map_opts is None:
+                last_map = line
+                result[last_map] = None
+            else:
+                k, v = line.split(' ', maxsplit=1)
+                map_opts[k.strip()] = v.strip().strip('"').strip("'")
+    return result
+
+
+async def create_mapcycle_embed(mapcycle_file: str) -> discord.Embed:
+    logger.info('Creating map cycle embed using file [%s]', mapcycle_file)
+    cycle = await parse_mapcycle(mapcycle_file)
     description = '\n'.join(
         [f'{k.rstrip("_")} {map_mode(v)}' for k, v in cycle.items()]
     )
@@ -54,14 +78,12 @@ def create_mapcycle_embed(mapcycle_file: str) -> discord.Embed:
 
 async def update_mapcycle(client: Bot30Client) -> None:
     await client.login(bot30.BOT_TOKEN)
-    channel = await client.channel_by_name(bot30.CHANNEL_NAME_MAPCYCLE)
-    message = await client.find_message_by_embed_title(
-        channel=channel,
-        embed_title=EMBED_MAPCYCLE_TITLE,
-        limit=3,
+    channel_message, embed = await asyncio.gather(
+        client.fetch_embed_message(bot30.CHANNEL_NAME_MAPCYCLE,
+                                   EMBED_MAPCYCLE_TITLE),
+        create_mapcycle_embed(bot30.MAPCYCLE_FILE),
     )
-    logger.info('Creating map cycle embed')
-    embed = create_mapcycle_embed(bot30.MAPCYCLE_FILE)
+    channel, message = channel_message
     if message:
         logger.info('Updating existing message: %s', message.id)
         await message.edit(embed=embed)

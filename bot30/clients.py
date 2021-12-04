@@ -1,6 +1,6 @@
 import asyncio
 import logging
-from typing import List, Optional
+from typing import List, Optional, Tuple
 
 import asyncio_dgram
 import discord
@@ -33,7 +33,7 @@ class Bot30Client(discord.Client):
         else:
             raise LookupError(f'Server {self.server_name} not found')
 
-    async def channel_by_name(self, name: str) -> discord.TextChannel:
+    async def _channel_by_name(self, name: str) -> discord.TextChannel:
         logger.info('Looking for channel named [%s]', name)
         channels = await self._guild.fetch_channels()
         for ch in channels:
@@ -43,7 +43,7 @@ class Bot30Client(discord.Client):
         else:
             raise LookupError(f'Channel {name} not found')
 
-    async def last_messages(
+    async def _last_messages(
             self,
             channel: discord.TextChannel,
             limit: int = 1,
@@ -59,13 +59,13 @@ class Bot30Client(discord.Client):
         logger.info('Found [%s] messages', len(messages))
         return messages
 
-    async def find_message_by_embed_title(
+    async def _find_message_by_embed_title(
             self,
             channel: discord.TextChannel,
             embed_title: str,
             limit: int = 5,
     ) -> Optional[discord.Message]:
-        messages = await self.last_messages(channel, limit=limit)
+        messages = await self._last_messages(channel, limit=limit)
         logger.info('Looking for message with the %r embed title',
                     embed_title)
         for msg in messages:
@@ -73,6 +73,20 @@ class Bot30Client(discord.Client):
                 if embed.title == embed_title:
                     return msg
         return None
+
+    async def fetch_embed_message(
+            self,
+            channel_name: str,
+            embed_title: str,
+            limit: int = 5,
+    ) -> Tuple[discord.TextChannel, discord.Message]:
+        channel = await self._channel_by_name(channel_name)
+        message = await self._find_message_by_embed_title(
+            channel=channel,
+            embed_title=embed_title,
+            limit=limit,
+        )
+        return channel, message
 
     def __str__(self) -> str:
         return (
