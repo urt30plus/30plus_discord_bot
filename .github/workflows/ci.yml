@@ -22,4 +22,10 @@ jobs:
           python -m pip install --upgrade pip setuptools wheel
           pip install -r requirements.txt
       - name: Run tests
+        env:
+          BOT_USER: 30+Bot#TEST
+          BOT_SERVER_NAME: 30+ Urban Test
+          BOT_TOKEN: sekret
+          CHANNEL_NAME_MAPCYCLE: test-mapcycle
+          MAPCYCLE_FILE: ./tests/data/mapcycle.txt
         run: python -m unittest
