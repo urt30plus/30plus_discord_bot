@@ -63,6 +63,7 @@ def create_mapcycle_embed(players: QuakePlayers) -> discord.Embed:
 
 
 async def update_current_map(client: Bot30Client) -> None:
+    await client.login(bot30.BOT_TOKEN)
     channel = await client.channel_by_name(bot30.CHANNEL_NAME_MAPCYCLE)
     message = await client.find_message_by_embed_title(
         channel=channel,
@@ -86,14 +87,13 @@ async def async_main() -> None:
 
     client = Bot30Client(bot30.BOT_USER, bot30.BOT_SERVER_NAME)
     logger.info('%s', client)
-    await client.login(bot30.BOT_TOKEN)
     try:
-        await update_current_map(client)
+        await asyncio.wait_for(update_current_map(client), timeout=30)
     except Exception as exc:
         logger.exception(exc)
         raise
     finally:
-        await client.close()
+        await asyncio.wait_for(client.close(), timeout=10)
 
     await asyncio.sleep(0.5)
     logger.info('Current Map Updater End')
