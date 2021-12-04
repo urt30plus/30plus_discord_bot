@@ -1,7 +1,6 @@
 import asyncio
 import datetime
 import logging
-from typing import List, Optional
 
 import discord
 
@@ -11,28 +10,18 @@ from bot30.models import QuakePlayers
 
 logger = logging.getLogger('bot30.current_map')
 
-EMBED_MAPCYCLE_TITLE = 'Current Map'
-EMBED_MAPCYCLE_COLOR = discord.Color.dark_red()
-
-
-def find_mapcycle_message(
-        messages: List[discord.Message]
-) -> Optional[discord.Message]:
-    for msg in messages:
-        for embed in msg.embeds:
-            if embed.title == EMBED_MAPCYCLE_TITLE:
-                return msg
-    return None
+EMBED_CURRENT_MAP_TITLE = 'Current Map'
+EMBED_CURRENT_MAP_COLOR = discord.Color.dark_red()
 
 
 def create_mapcycle_embed(players: QuakePlayers) -> discord.Embed:
     embed = discord.Embed(
-        title=EMBED_MAPCYCLE_TITLE,
+        title=EMBED_CURRENT_MAP_TITLE,
         description=players.mapname,
-        color=EMBED_MAPCYCLE_COLOR,
+        color=EMBED_CURRENT_MAP_COLOR,
     )
-    info = f'{players.player_count} ({players.gametime})'
-    embed.add_field(name='Player Count (Game Time)', value=info, inline=False)
+    info = f'{players.gametime} / {players.player_count}'
+    embed.add_field(name='Game Time / Players', value=info, inline=False)
     if players.players:
         team_r = [
             f'{p.name} ({"/".join(p.score)})'
@@ -45,8 +34,10 @@ def create_mapcycle_embed(players: QuakePlayers) -> discord.Embed:
         if team_r or team_b:
             team_r = '\n'.join(team_r) if team_r else '...'
             team_b = '\n'.join(team_b) if team_b else '...'
-            embed.add_field(name=f'Red ({players.score_red})', value=team_r, inline=True)
-            embed.add_field(name=f'Blue ({players.score_blue})', value=team_b, inline=True)
+            embed.add_field(name=f'Red ({players.score_red})', value=team_r,
+                            inline=True)
+            embed.add_field(name=f'Blue ({players.score_blue})', value=team_b,
+                            inline=True)
         else:
             team_free = [
                 f'{p.name} ({"/".join(p.score)})'
@@ -72,15 +63,12 @@ def create_mapcycle_embed(players: QuakePlayers) -> discord.Embed:
 
 
 async def update_current_map(client: Bot30Client) -> None:
-    logger.info('Looking for channel named [%s]', bot30.CHANNEL_NAME_MAPCYCLE)
     channel = await client.channel_by_name(bot30.CHANNEL_NAME_MAPCYCLE)
-    logger.info('Found channel: %s [%s]', channel.name, channel.id)
-    logger.info('Fetching last 2 messages if posted by %r', bot30.BOT_USER)
-    last_messages = await client.last_messages(channel, limit=2)
-    logger.info('Found [%s] messages', len(last_messages))
-    logger.info('Looking for last message with the %r embed title',
-                EMBED_MAPCYCLE_TITLE)
-    message = find_mapcycle_message(last_messages)
+    message = await client.find_message_by_embed_title(
+        channel=channel,
+        embed_title=EMBED_CURRENT_MAP_TITLE,
+        limit=3,
+    )
     logger.info('Creating current map embed')
     async with QuakeClient(bot30.GAME_SERVER_IP, bot30.GAME_SERVER_PORT) as qc:
         players = await qc.players(bot30.GAME_SERVER_RCON_PASS)

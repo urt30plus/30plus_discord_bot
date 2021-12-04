@@ -1,6 +1,6 @@
 import asyncio
 import logging
-from typing import List
+from typing import List, Optional
 
 import asyncio_dgram
 import discord
@@ -34,9 +34,11 @@ class Bot30Client(discord.Client):
             raise LookupError(f'Server {self.server_name} not found')
 
     async def channel_by_name(self, name: str) -> discord.TextChannel:
+        logger.info('Looking for channel named [%s]', name)
         channels = await self._guild.fetch_channels()
         for ch in channels:
             if ch.name == name:
+                logger.info('Found channel: %s [%s]', ch.name, ch.id)
                 return ch
         else:
             raise LookupError(f'Channel {name} not found')
@@ -47,12 +49,30 @@ class Bot30Client(discord.Client):
             limit: int = 1,
     ) -> List[discord.Message]:
         messages = []
+        logger.info('Fetching last %s messages if posted by %r in channel %s',
+                    limit, self.bot_user, channel.name)
         async for msg in channel.history(limit=limit):
             author = msg.author
             author_user = f'{author.name}#{author.discriminator}'
             if author.bot and author_user == self.bot_user:
                 messages.append(msg)
+        logger.info('Found [%s] messages', len(messages))
         return messages
+
+    async def find_message_by_embed_title(
+            self,
+            channel: discord.TextChannel,
+            embed_title: str,
+            limit: int = 5,
+    ) -> Optional[discord.Message]:
+        messages = await self.last_messages(channel, limit=limit)
+        logger.info('Looking for message with the %r embed title',
+                    embed_title)
+        for msg in messages:
+            for embed in msg.embeds:
+                if embed.title == embed_title:
+                    return msg
+        return None
 
     def __str__(self) -> str:
         return (

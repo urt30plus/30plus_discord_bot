@@ -1,7 +1,7 @@
 import asyncio
 import datetime
 import logging
-from typing import Dict, List, Optional
+from typing import Dict
 
 import discord
 
@@ -32,16 +32,6 @@ def map_mode(map_opts: Dict[str, str]) -> str:
         return f'({result})'
 
 
-def find_mapcycle_message(
-        messages: List[discord.Message]
-) -> Optional[discord.Message]:
-    for msg in messages:
-        for embed in msg.embeds:
-            if embed.title == EMBED_MAPCYCLE_TITLE:
-                return msg
-    return None
-
-
 def create_mapcycle_embed(mapcycle_file: str) -> discord.Embed:
     cycle = MapCycleParser().parse(mapcycle_file)
     description = '\n'.join(
@@ -63,15 +53,12 @@ def create_mapcycle_embed(mapcycle_file: str) -> discord.Embed:
 
 
 async def update_mapcycle(client: Bot30Client) -> None:
-    logger.info('Looking for channel named [%s]', bot30.CHANNEL_NAME_MAPCYCLE)
     channel = await client.channel_by_name(bot30.CHANNEL_NAME_MAPCYCLE)
-    logger.info('Found channel: %s [%s]', channel.name, channel.id)
-    logger.info('Fetching last 2 messages if posted by %r', bot30.BOT_USER)
-    last_messages = await client.last_messages(channel, limit=2)
-    logger.info('Found [%s] messages', len(last_messages))
-    logger.info('Looking for last message with the %r embed title',
-                EMBED_MAPCYCLE_TITLE)
-    message = find_mapcycle_message(last_messages)
+    message = await client.find_message_by_embed_title(
+        channel=channel,
+        embed_title=EMBED_MAPCYCLE_TITLE,
+        limit=3,
+    )
     logger.info('Creating map cycle embed')
     embed = create_mapcycle_embed(bot30.MAPCYCLE_FILE)
     if message:
