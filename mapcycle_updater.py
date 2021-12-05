@@ -48,10 +48,10 @@ async def parse_mapcycle(mapcycle_file: str) -> Dict[str, Dict]:
                 map_opts = None
             elif map_opts is None:
                 last_map = line
-                result[last_map] = None
+                result[last_map] = {}
             else:
                 k, v = line.split(' ', maxsplit=1)
-                map_opts[k.strip()] = v.strip().strip('"').strip("'")
+                map_opts[k.strip()] = v.strip().strip('"\'')
     return result
 
 

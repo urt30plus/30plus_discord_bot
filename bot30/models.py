@@ -1,4 +1,6 @@
+import dataclasses
 import enum
+import functools
 import re
 from typing import Optional, Tuple
 
@@ -17,8 +19,9 @@ class QuakeGameType(enum.Enum):
     GUNGAME = '11'
 
 
+@functools.total_ordering
+@dataclasses.dataclass()
 class QuakePlayer:
-
     RE_COLOR = re.compile(r'(\^\d)')
 
     RE_PLAYER = re.compile(r'^(?P<slot>[0-9]+):(?P<name>.*)\s+'
@@ -27,13 +30,31 @@ class QuakePlayer:
                            r'DEATHS:(?P<death>[0-9]+)\s+'
                            r'ASSISTS:(?P<assist>[0-9]+)\s+'
                            r'PING:(?P<ping>[0-9]+|CNCT|ZMBI)\s+'
-                           r'AUTH:(?P<auth>.*)\s+IP:(?P<ip>.*)$', re.IGNORECASE)
+                           r'AUTH:(?P<auth>.*)\s+'
+                           r'IP:(?P<ip>.*)$', re.IGNORECASE)
 
-    def __init__(self, name: str, team: str, score: Tuple[str, ...], ping: str) -> None:
-        self.name = name
-        self.team = team
-        self.score = score
-        self.ping = ping
+    name: str
+    team: str
+    score: Tuple[str, ...]
+    ping: str
+
+    @property
+    def kills(self) -> int:
+        return int(self.score[0])
+
+    @property
+    def deaths(self) -> int:
+        return int(self.score[1])
+
+    @property
+    def assists(self) -> int:
+        return int(self.score[2])
+
+    def __lt__(self, other) -> bool:
+        return False if not isinstance(other, QuakePlayer) else (
+                (self.kills, self.deaths * -1, self.assists, self.name) <
+                (other.kills, other.deaths * -1, other.assists, other.name)
+        )
 
     @staticmethod
     def from_string(data: str) -> 'QuakePlayer':
@@ -57,7 +78,6 @@ class QuakePlayer:
 
 
 class QuakePlayers:
-
     RE_SCORES = re.compile(r'\s*R:(?P<red>[\d]+)\s+B:(?P<blue>[\d]+)')
 
     def __init__(self) -> None:
@@ -100,6 +120,25 @@ class QuakePlayers:
             return m['blue']
         return None
 
+    def _get_team(self, team_name: str) -> list[QuakePlayer]:
+        return [p for p in self.players if p.team == team_name]
+
+    @property
+    def spectators(self) -> list[QuakePlayer]:
+        return self._get_team('SPECTATOR')
+
+    @property
+    def team_free(self) -> list[QuakePlayer]:
+        return self._get_team('FREE')
+
+    @property
+    def team_red(self) -> list[QuakePlayer]:
+        return self._get_team('RED')
+
+    @property
+    def team_blue(self) -> list[QuakePlayer]:
+        return self._get_team('BLUE')
+
     @staticmethod
     def from_string(data: str) -> 'QuakePlayers':
         lines = data.splitlines()
@@ -110,10 +149,15 @@ class QuakePlayers:
             players.settings[k] = v.strip()
             if k == 'GameTime':
                 break
+        player_list = []
         for line in lines:
             prefix, _ = line.split(':', maxsplit=1)
             if prefix.isnumeric():
-                players.players.append(QuakePlayer.from_string(line))
+                player = QuakePlayer.from_string(line)
+                # TODO: handle connecting and zombie clients
+                player_list.append(player)
+        player_list.sort(reverse=True)
+        players.players = player_list
         return players
 
     def __str__(self) -> str:

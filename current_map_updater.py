@@ -6,11 +6,33 @@ import discord
 
 import bot30
 from bot30.clients import Bot30Client, QuakeClient
+from bot30.models import QuakePlayers
 
 logger = logging.getLogger('bot30.current_map')
 
 EMBED_CURRENT_MAP_TITLE = 'Current Map'
 EMBED_CURRENT_MAP_COLOR = discord.Color.dark_red()
+
+
+def add_player_fields(embed: discord.Embed, players: QuakePlayers) -> None:
+    team_r = [f'{p.name} ({"/".join(p.score)})' for p in players.team_red]
+    team_b = [f'{p.name} ({"/".join(p.score)})' for p in players.team_blue]
+    if team_r or team_b:
+        team_r = '\n'.join(team_r) if team_r else '...'
+        team_b = '\n'.join(team_b) if team_b else '...'
+        embed.add_field(name=f'Red ({players.score_red})', value=team_r,
+                        inline=True)
+        embed.add_field(name=f'Blue ({players.score_blue})', value=team_b,
+                        inline=True)
+    else:
+        team_free = [f'{p.name} ({"/".join(p.score)})' for p in players.team_free]
+        if team_free:
+            team_free = '\n'.join(team_free)
+            embed.add_field(name='Players', value=team_free, inline=False)
+    team_spec = [f'{p.name}' for p in players.spectators]
+    if team_spec:
+        team_spec = '\n'.join(team_spec)
+        embed.add_field(name='Spec', value=team_spec, inline=False)
 
 
 async def create_mapcycle_embed() -> discord.Embed:
@@ -22,39 +44,12 @@ async def create_mapcycle_embed() -> discord.Embed:
         description=players.mapname,
         color=EMBED_CURRENT_MAP_COLOR,
     )
-    info = f'{players.gametime} / {players.player_count}'
-    embed.add_field(name='Game Time / Players', value=info, inline=False)
     if players.players:
-        team_r = [
-            f'{p.name} ({"/".join(p.score)})'
-            for p in players.players if p.team == 'RED'
-        ]
-        team_b = [
-            f'{p.name} ({"/".join(p.score)})'
-            for p in players.players if p.team == 'BLUE'
-        ]
-        if team_r or team_b:
-            team_r = '\n'.join(team_r) if team_r else '...'
-            team_b = '\n'.join(team_b) if team_b else '...'
-            embed.add_field(name=f'Red ({players.score_red})', value=team_r,
-                            inline=True)
-            embed.add_field(name=f'Blue ({players.score_blue})', value=team_b,
-                            inline=True)
-        else:
-            team_free = [
-                f'{p.name} ({"/".join(p.score)})'
-                for p in players.players if p.team == 'FREE'
-            ]
-            if team_free:
-                team_free = '\n'.join(team_free)
-                embed.add_field(name='Players', value=team_free, inline=False)
-        team_spec = [
-            f'{p.name}'
-            for p in players.players if p.team == 'SPECTATOR'
-        ]
-        if team_spec:
-            team_spec = '\n'.join(team_spec)
-            embed.add_field(name='Spec', value=team_spec, inline=False)
+        info = f'{players.gametime} / {players.player_count}'
+        embed.add_field(name='Game Time / Player Count', value=info, inline=False)
+        add_player_fields(embed, players)
+    else:
+        embed.description += '\n\n*No players online*'
     now = datetime.datetime.now(tz=datetime.timezone.utc)
     embed.set_footer(
         text=(

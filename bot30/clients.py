@@ -97,7 +97,6 @@ class Bot30Client(discord.Client):
 
 
 class QuakeClient:
-
     CMD_PREFIX = b'\xFF' * 4
     ENCODING = 'latin-1'
 
@@ -110,7 +109,8 @@ class QuakeClient:
         if not self.stream:
             self.stream = await asyncio_dgram.connect((self.host, self.port))
 
-    async def players(self, rcon_pass: str, timeout: float = 2.0) -> QuakePlayers:
+    async def players(self, rcon_pass: str,
+                      timeout: float = 2.0) -> QuakePlayers:
         await self.connect()
         cmd = f'rcon {rcon_pass} players'.encode(self.ENCODING)
         await self.stream.send(self.CMD_PREFIX + cmd)
