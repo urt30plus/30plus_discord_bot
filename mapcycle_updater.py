@@ -1,7 +1,5 @@
 import asyncio
-import datetime
 import logging
-from typing import Dict
 
 import aiofiles
 import discord
@@ -16,13 +14,13 @@ EMBED_MAPCYCLE_TITLE = 'Map Cycle'
 EMBED_MAPCYCLE_COLOR = discord.Color.dark_blue()
 
 
-def map_mode(map_opts: Dict[str, str]) -> str:
+def map_mode(map_opts: dict[str, str]) -> str:
     if map_opts.get('mod_gungame', '0') == '1':
         result = QuakeGameType.GUNGAME.name + ' d3mod'
     elif map_opts.get('mod_ctf', '0') == '1':
         result = QuakeGameType.CTF.name + ' d3mod'
     else:
-        game_type = map_opts.get('g_gametype', '7')
+        game_type = map_opts.get('g_gametype', QuakeGameType.CTF.value)
         result = QuakeGameType(game_type).name
     if map_opts.get('g_instagib') == '1':
         result += ' Instagib'
@@ -32,27 +30,31 @@ def map_mode(map_opts: Dict[str, str]) -> str:
         return f'({result})'
 
 
-async def parse_mapcycle(mapcycle_file: str) -> Dict[str, Dict]:
+def parse_mapcycle_lines(lines: list[str]) -> dict[str, dict]:
     result = {}
-    map_opts = None
-    last_map = None
-    async with aiofiles.open(mapcycle_file, mode='r', encoding='utf-8') as f:
-        async for line in f:
-            line = line.strip()
-            if not line or line.startswith('//'):
-                continue
-            elif line == '{':
-                map_opts = {}
-            elif line == '}':
-                result[last_map] = map_opts
-                map_opts = None
-            elif map_opts is None:
-                last_map = line
-                result[last_map] = {}
-            else:
-                k, v = line.split(' ', maxsplit=1)
-                map_opts[k.strip()] = v.strip().strip('"\'')
+    map_name = None
+    map_config = None
+    for line in lines:
+        line = line.strip()
+        if not line or line.startswith('//'):
+            continue
+        elif line == '{':
+            map_config = result[map_name]
+        elif line == '}':
+            map_config = None
+        elif map_config is None:
+            map_name = line
+            result[map_name] = {}
+        else:
+            k, v = line.split(' ', maxsplit=1)
+            map_config[k.strip()] = v.strip().strip('"\'')
     return result
+
+
+async def parse_mapcycle(mapcycle_file: str) -> dict[str, dict]:
+    async with aiofiles.open(mapcycle_file, mode='r', encoding='utf-8') as f:
+        lines = await f.readlines()
+    return parse_mapcycle_lines(lines)
 
 
 async def create_mapcycle_embed(mapcycle_file: str) -> discord.Embed:
@@ -66,14 +68,18 @@ async def create_mapcycle_embed(mapcycle_file: str) -> discord.Embed:
         description=description,
         color=EMBED_MAPCYCLE_COLOR,
     )
-    now = datetime.datetime.now(tz=datetime.timezone.utc)
     embed.set_footer(
         text=(
-            f'\nTotal Maps: {len(cycle)}'
-            f'\nLast Updated: {now.strftime("%Y-%m-%d %H:%M %Z")}'
+            f'\n\nTotal Maps: {len(cycle)}'
+            f'\nLast Updated: {bot30.utc_now_str()}'
         )
     )
     return embed
+
+
+def should_update_embed(message: discord.Message, embed: discord.Embed) -> bool:
+    current_embed = message.embeds[0]
+    return current_embed.description.strip() != embed.description.strip()
 
 
 async def update_mapcycle(client: Bot30Client) -> None:
@@ -85,8 +91,11 @@ async def update_mapcycle(client: Bot30Client) -> None:
     )
     channel, message = channel_message
     if message:
-        logger.info('Updating existing message: %s', message.id)
-        await message.edit(embed=embed)
+        if should_update_embed(message, embed):
+            logger.info('Updating existing message: %s', message.id)
+            await message.edit(embed=embed)
+        else:
+            logger.info('Existing message embed is up to date')
     else:
         logger.info('Sending new message')
         await channel.send(embed=embed)

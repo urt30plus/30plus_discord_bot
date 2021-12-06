@@ -1,3 +1,4 @@
+import datetime
 import logging.config
 import os
 
@@ -54,3 +55,8 @@ LOGGING_CONFIG = {
 }
 
 logging.config.dictConfig(LOGGING_CONFIG)
+
+
+def utc_now_str() -> str:
+    utc_now = datetime.datetime.now(tz=datetime.timezone.utc)
+    return utc_now.strftime("%Y-%m-%d %H:%M %Z")

@@ -1,6 +1,6 @@
 import asyncio
 import logging
-from typing import List, Optional, Tuple
+from typing import List, Optional
 
 import asyncio_dgram
 import discord
@@ -24,7 +24,7 @@ class Bot30Client(discord.Client):
         self._guild = None
         super().__init__(*args, **kwargs)
 
-    async def login(self, token, *, bot=True):
+    async def login(self, token: str, *, bot: bool = True) -> None:
         await super().login(token, bot=bot)
         async for guild in super().fetch_guilds():
             if guild.name == self.server_name:
@@ -79,7 +79,7 @@ class Bot30Client(discord.Client):
             channel_name: str,
             embed_title: str,
             limit: int = 5,
-    ) -> Tuple[discord.TextChannel, discord.Message]:
+    ) -> tuple[discord.TextChannel, discord.Message]:
         channel = await self._channel_by_name(channel_name)
         message = await self._find_message_by_embed_title(
             channel=channel,
@@ -109,8 +109,11 @@ class QuakeClient:
         if not self.stream:
             self.stream = await asyncio_dgram.connect((self.host, self.port))
 
-    async def players(self, rcon_pass: str,
-                      timeout: float = 2.0) -> QuakePlayers:
+    async def players(
+            self,
+            rcon_pass: str,
+            timeout: float = 2.0
+    ) -> QuakePlayers:
         await self.connect()
         cmd = f'rcon {rcon_pass} players'.encode(self.ENCODING)
         await self.stream.send(self.CMD_PREFIX + cmd)

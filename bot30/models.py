@@ -2,7 +2,7 @@ import dataclasses
 import enum
 import functools
 import re
-from typing import Optional, Tuple
+from typing import Optional
 
 
 class QuakeGameType(enum.Enum):
@@ -35,7 +35,7 @@ class QuakePlayer:
 
     name: str
     team: str
-    score: Tuple[str, ...]
+    score: tuple[str, ...]
     ping: str
 
     @property

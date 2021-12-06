@@ -1,5 +1,4 @@
 import asyncio
-import datetime
 import logging
 
 import discord
@@ -25,20 +24,25 @@ def add_player_fields(embed: discord.Embed, players: QuakePlayers) -> None:
         embed.add_field(name=f'Blue ({players.score_blue})', value=team_b,
                         inline=True)
     else:
-        team_free = [f'{p.name} ({"/".join(p.score)})' for p in players.team_free]
+        team_free = [f'{p.name} ({"/".join(p.score)})' for p in
+                     players.team_free]
         if team_free:
             team_free = '\n'.join(team_free)
             embed.add_field(name='Players', value=team_free, inline=False)
     team_spec = [f'{p.name}' for p in players.spectators]
     if team_spec:
         team_spec = '\n'.join(team_spec)
-        embed.add_field(name='Spec', value=team_spec, inline=False)
+        embed.add_field(name='Spectators', value=team_spec, inline=False)
+
+
+async def get_players() -> QuakePlayers:
+    async with QuakeClient(bot30.GAME_SERVER_IP, bot30.GAME_SERVER_PORT) as c:
+        return await c.players(bot30.GAME_SERVER_RCON_PASS)
 
 
 async def create_mapcycle_embed() -> discord.Embed:
     logger.info('Creating current map embed')
-    async with QuakeClient(bot30.GAME_SERVER_IP, bot30.GAME_SERVER_PORT) as qc:
-        players = await qc.players(bot30.GAME_SERVER_RCON_PASS)
+    players = await get_players()
     embed = discord.Embed(
         title=EMBED_CURRENT_MAP_TITLE,
         description=players.mapname,
@@ -46,30 +50,40 @@ async def create_mapcycle_embed() -> discord.Embed:
     )
     if players.players:
         info = f'{players.gametime} / {players.player_count}'
-        embed.add_field(name='Game Time / Player Count', value=info, inline=False)
+        embed.add_field(name='Game Time / Player Count', value=info,
+                        inline=False)
         add_player_fields(embed, players)
     else:
         embed.description += '\n\n*No players online*'
-    now = datetime.datetime.now(tz=datetime.timezone.utc)
-    embed.set_footer(
-        text=(
-            f'\nLast Updated: {now.strftime("%Y-%m-%d %H:%M %Z")}'
-        )
-    )
+    embed.set_footer(text=f'\n\nLast Updated: {bot30.utc_now_str()}')
     return embed
+
+
+def should_update_embed(message: discord.Message, embed: discord.Embed) -> bool:
+    current_embed = message.embeds[0]
+    return (
+            current_embed.fields or
+            embed.fields or
+            current_embed.description.strip() != embed.description.strip()
+    )
 
 
 async def update_current_map(client: Bot30Client) -> None:
     await client.login(bot30.BOT_TOKEN)
+    embed: discord.Embed
     channel_message, embed = await asyncio.gather(
         client.fetch_embed_message(bot30.CHANNEL_NAME_MAPCYCLE,
                                    EMBED_CURRENT_MAP_TITLE),
         create_mapcycle_embed(),
     )
+    message: discord.Message
     channel, message = channel_message
     if message:
-        logger.info('Updating existing message: %s', message.id)
-        await message.edit(embed=embed)
+        if should_update_embed(message, embed):
+            logger.info('Updating existing message: %s', message.id)
+            await message.edit(embed=embed)
+        else:
+            logger.info('Existing message embed is up to date')
     else:
         logger.info('Sending new message')
         await channel.send(embed=embed)
