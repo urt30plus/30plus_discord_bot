@@ -5,7 +5,7 @@ import discord
 
 import bot30
 from bot30.clients import Bot30Client, QuakeClient
-from bot30.models import QuakePlayers
+from bot30.models import QuakePlayers, QuakePlayer
 
 logger = logging.getLogger('bot30.current_map')
 
@@ -13,9 +13,16 @@ EMBED_CURRENT_MAP_TITLE = 'Current Map'
 EMBED_CURRENT_MAP_COLOR = discord.Color.dark_red()
 
 
+def player_score_display(players: list[QuakePlayer]) -> list[str]:
+    return [
+        f'{p.name[:20]:20} [{p.kills:3}/{p.deaths:2}/{p.assists:2}]'
+        for p in players
+    ]
+
+
 def add_player_fields(embed: discord.Embed, players: QuakePlayers) -> None:
-    team_r = [f'{p.name} ({"/".join(p.score)})' for p in players.team_red]
-    team_b = [f'{p.name} ({"/".join(p.score)})' for p in players.team_blue]
+    team_r = player_score_display(players.team_red)
+    team_b = player_score_display(players.team_blue)
     if team_r or team_b:
         team_r = '\n'.join(team_r) if team_r else '...'
         team_b = '\n'.join(team_b) if team_b else '...'
@@ -24,8 +31,7 @@ def add_player_fields(embed: discord.Embed, players: QuakePlayers) -> None:
         embed.add_field(name=f'Blue ({players.score_blue})', value=team_b,
                         inline=True)
     else:
-        team_free = [f'{p.name} ({"/".join(p.score)})' for p in
-                     players.team_free]
+        team_free = player_score_display(players.team_free)
         if team_free:
             team_free = '\n'.join(team_free)
             embed.add_field(name='Players', value=team_free, inline=False)
@@ -40,23 +46,33 @@ async def get_players() -> QuakePlayers:
         return await c.players(bot30.GAME_SERVER_RCON_PASS)
 
 
-async def create_mapcycle_embed() -> discord.Embed:
-    logger.info('Creating current map embed')
-    players = await get_players()
+def create_players_embed(players: QuakePlayers) -> discord.Embed:
+    description = players.mapname if players else '*Error retrieving map info*'
     embed = discord.Embed(
         title=EMBED_CURRENT_MAP_TITLE,
-        description=players.mapname,
+        description=description,
         color=EMBED_CURRENT_MAP_COLOR,
     )
-    if players.players:
-        info = f'{players.gametime} / {players.player_count}'
-        embed.add_field(name='Game Time / Player Count', value=info,
-                        inline=False)
-        add_player_fields(embed, players)
-    else:
-        embed.description += '\n\n*No players online*'
     embed.set_footer(text=f'\n\nLast Updated: {bot30.utc_now_str()}')
+    if players:
+        if players.players:
+            info = f'{players.gametime} / {players.player_count}'
+            embed.add_field(name='Game Time / Player Count', value=info,
+                            inline=False)
+            add_player_fields(embed, players)
+        else:
+            embed.description += '\n\n*No players online*'
     return embed
+
+
+async def create_embed() -> discord.Embed:
+    logger.info('Creating current map embed')
+    try:
+        players = await get_players()
+    except Exception:
+        logger.exception('Failed to get Players')
+        players = None
+    return create_players_embed(players)
 
 
 def should_update_embed(message: discord.Message, embed: discord.Embed) -> bool:
@@ -74,7 +90,7 @@ async def update_current_map(client: Bot30Client) -> None:
     channel_message, embed = await asyncio.gather(
         client.fetch_embed_message(bot30.CHANNEL_NAME_MAPCYCLE,
                                    EMBED_CURRENT_MAP_TITLE),
-        create_mapcycle_embed(),
+        create_embed(),
     )
     message: discord.Message
     channel, message = channel_message
