@@ -105,20 +105,35 @@ class QuakeClient:
         self.port = port
         self.stream = None
 
-    async def connect(self) -> None:
-        if not self.stream:
+    async def connect(self):
+        if self.stream is None:
             self.stream = await asyncio_dgram.connect((self.host, self.port))
+
+    async def _receive(self, timeout: float = 0.5) -> bytearray:
+        result = bytearray()
+        while True:
+            try:
+                data, _ = await asyncio.wait_for(
+                    self.stream.recv(),
+                    timeout=timeout,
+                )
+                result += data
+            except asyncio.TimeoutError:
+                break
+
+        return result
 
     async def players(
             self,
             rcon_pass: str,
-            timeout: float = 2.0
+            timeout: float = 0.5,
     ) -> QuakePlayers:
-        await self.connect()
         cmd = f'rcon {rcon_pass} players'.encode(self.ENCODING)
         await self.stream.send(self.CMD_PREFIX + cmd)
-        data, _ = await asyncio.wait_for(self.stream.recv(), timeout=timeout)
-        data = data[len(self.CMD_PREFIX):].decode(self.ENCODING)
+        data = await self._receive(timeout=timeout)
+        response_prefix = self.CMD_PREFIX + b'print\n'
+        assert data.startswith(response_prefix)
+        data = data[len(response_prefix):].decode(self.ENCODING)
         logger.debug('RCON players payload:\n%s', data)
         return QuakePlayers.from_string(data)
 
@@ -126,6 +141,7 @@ class QuakeClient:
         self.stream.close()
 
     async def __aenter__(self):
+        await self.connect()
         return self
 
     async def __aexit__(self, exc_type, exc_val, exc_tb):
