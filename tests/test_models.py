@@ -69,7 +69,6 @@ class QuakePlayersTestCase(unittest.TestCase):
 
     def test_from_string_ctf(self):
         s = '''\
-        print
         Map: ut4_abbey
         Players: 3
         GameType: CTF
@@ -93,7 +92,6 @@ class QuakePlayersTestCase(unittest.TestCase):
 
     def test_from_string_ffa(self):
         s = '''\
-        print
         Map: ut4_docks
         Players: 3
         GameType: FFA

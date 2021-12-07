@@ -51,7 +51,9 @@ class QuakePlayer:
         return int(self.score[2])
 
     def __lt__(self, other) -> bool:
-        return False if not isinstance(other, QuakePlayer) else (
+        if not isinstance(other, QuakePlayer):
+            return NotImplemented
+        return (
                 (self.kills, self.deaths * -1, self.assists, self.name) <
                 (other.kills, other.deaths * -1, other.assists, other.name)
         )
@@ -141,23 +143,26 @@ class QuakePlayers:
 
     @staticmethod
     def from_string(data: str) -> 'QuakePlayers':
-        lines = data.splitlines()
-        assert lines.pop(0) == 'print'
         players = QuakePlayers()
-        while line := lines.pop(0):
+        in_header = True
+        for line in data.splitlines():
             k, v = line.split(':', maxsplit=1)
-            players.settings[k] = v.strip()
-            if k == 'GameTime':
-                break
-        player_list = []
-        for line in lines:
-            prefix, _ = line.split(':', maxsplit=1)
-            if prefix.isnumeric():
-                player = QuakePlayer.from_string(line)
-                # TODO: handle connecting and zombie clients
-                player_list.append(player)
-        player_list.sort(reverse=True)
-        players.players = player_list
+            if in_header:
+                players.settings[k] = v.strip()
+                if k == 'GameTime':
+                    in_header = False
+            else:
+                if k.isnumeric():
+                    player = QuakePlayer.from_string(line)
+                    players.players.append(player)
+
+        if players.player_count != len(players.players):
+            raise RuntimeError(
+                f'Player count {players.player_count} does not match '
+                f'players {len(players.players)}'
+            )
+
+        players.players.sort(reverse=True)
         return players
 
     def __str__(self) -> str:
