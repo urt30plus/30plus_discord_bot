@@ -42,8 +42,12 @@ def add_player_fields(embed: discord.Embed, players: QuakePlayers) -> None:
 
 
 async def get_players() -> QuakePlayers:
-    async with QuakeClient(bot30.GAME_SERVER_IP, bot30.GAME_SERVER_PORT) as c:
-        return await c.players(bot30.GAME_SERVER_RCON_PASS)
+    async with QuakeClient(
+            host=bot30.GAME_SERVER_IP,
+            port=bot30.GAME_SERVER_PORT,
+            rcon_pass=bot30.GAME_SERVER_RCON_PASS,
+    ) as c:
+        return await c.players()
 
 
 def create_players_embed(players: QuakePlayers) -> discord.Embed:

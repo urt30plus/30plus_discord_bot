@@ -98,11 +98,13 @@ class Bot30Client(discord.Client):
 
 class QuakeClient:
     CMD_PREFIX = b'\xFF' * 4
+    REPLY_PREFIX = CMD_PREFIX + b'print\n'
     ENCODING = 'latin-1'
 
-    def __init__(self, host: str, port: int) -> None:
+    def __init__(self, host: str, port: int, rcon_pass: str) -> None:
         self.host = host
         self.port = port
+        self.rcon_pass = rcon_pass
         self.stream = None
 
     async def connect(self):
@@ -117,23 +119,19 @@ class QuakeClient:
                     self.stream.recv(),
                     timeout=timeout,
                 )
-                result += data
+                result += data.replace(self.REPLY_PREFIX, b'', 1)
             except asyncio.TimeoutError:
                 break
-
         return result
 
     async def players(
             self,
-            rcon_pass: str,
             timeout: float = 0.5,
     ) -> QuakePlayers:
-        cmd = f'rcon {rcon_pass} players'.encode(self.ENCODING)
+        cmd = f'rcon "{self.rcon_pass}" players\n'.encode(self.ENCODING)
         await self.stream.send(self.CMD_PREFIX + cmd)
         data = await self._receive(timeout=timeout)
-        response_prefix = self.CMD_PREFIX + b'print\n'
-        assert data.startswith(response_prefix)
-        data = data[len(response_prefix):].decode(self.ENCODING)
+        data = data.decode(self.ENCODING)
         logger.debug('RCON players payload:\n%s', data)
         return QuakePlayers.from_string(data)
 
