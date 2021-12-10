@@ -92,7 +92,7 @@ class QuakePlayers:
 
     @property
     def player_count(self) -> int:
-        return int(self.settings['Players'])
+        return int(self.settings.get('Players', 0))
 
     @property
     def gametype(self) -> str:
@@ -160,6 +160,7 @@ class QuakePlayers:
             raise RuntimeError(
                 f'Player count {players.player_count} does not match '
                 f'players {len(players.players)}'
+                f'\n\n{data}'
             )
 
         players.players.sort(reverse=True)
