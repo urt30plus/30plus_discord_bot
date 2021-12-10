@@ -11,11 +11,13 @@ logger = logging.getLogger('bot30.current_map')
 
 EMBED_CURRENT_MAP_TITLE = 'Current Map'
 EMBED_CURRENT_MAP_COLOR = discord.Color.dark_red()
+EMBED_NO_TEAM = '.' * (15 + 12)
 
 
 def player_score_display(players: list[QuakePlayer]) -> list[str]:
     return [
-        f'{p.name[:20]:20} [{p.kills:3}/{p.deaths:2}/{p.assists:2}]'
+        f'{p.name[:15]:15} '
+        f'[{p.kills:3}/{p.deaths:2}/{p.assists:2}]'
         for p in players
     ]
 
@@ -24,8 +26,10 @@ def add_player_fields(embed: discord.Embed, players: QuakePlayers) -> None:
     team_r = player_score_display(players.team_red)
     team_b = player_score_display(players.team_blue)
     if team_r or team_b:
-        team_r = '\n'.join(team_r) if team_r else '...'
-        team_b = '\n'.join(team_b) if team_b else '...'
+        team_r = '\n'.join(team_r) if team_r else EMBED_NO_TEAM
+        team_b = '\n'.join(team_b) if team_b else EMBED_NO_TEAM
+        team_r = f"```{team_r}```"
+        team_b = f"```{team_b}```"
         embed.add_field(name=f'Red ({players.score_red})', value=team_r,
                         inline=True)
         embed.add_field(name=f'Blue ({players.score_blue})', value=team_b,
@@ -34,10 +38,12 @@ def add_player_fields(embed: discord.Embed, players: QuakePlayers) -> None:
         team_free = player_score_display(players.team_free)
         if team_free:
             team_free = '\n'.join(team_free)
+            team_free = f"```{team_free}```"
             embed.add_field(name='Players', value=team_free, inline=False)
     team_spec = [f'{p.name}' for p in players.spectators]
     if team_spec:
         team_spec = '\n'.join(team_spec)
+        team_spec = f"```{team_spec}```"
         embed.add_field(name='Spectators', value=team_spec, inline=False)
 
 
