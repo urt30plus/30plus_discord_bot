@@ -60,16 +60,14 @@ class QuakePlayer:
 
     @staticmethod
     def from_string(data: str) -> 'QuakePlayer':
-        m = re.match(QuakePlayer.RE_PLAYER, data.strip())
-        if not m:
-            raise ValueError(f'Invalid data: {data}')
-        player = QuakePlayer(
-            name=re.sub(QuakePlayer.RE_COLOR, '', m['name']),
-            team=m['team'],
-            score=(m['kill'], m['death'], m['assist']),
-            ping=m['ping']
-        )
-        return player
+        if m := re.match(QuakePlayer.RE_PLAYER, data.strip()):
+            return QuakePlayer(
+                name=re.sub(QuakePlayer.RE_COLOR, '', m['name']),
+                team=m['team'],
+                score=(m['kill'], m['death'], m['assist']),
+                ping=m['ping'],
+            )
+        raise ValueError(f'Invalid data: {data}')
 
     def __repr__(self) -> str:
         return (

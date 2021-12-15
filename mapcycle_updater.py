@@ -57,15 +57,16 @@ async def parse_mapcycle(mapcycle_file: str) -> dict[str, dict]:
     return parse_mapcycle_lines(lines)
 
 
-async def create_mapcycle_embed(mapcycle_file: str) -> discord.Embed:
-    logger.info('Creating map cycle embed using file [%s]', mapcycle_file)
-    cycle = await parse_mapcycle(mapcycle_file)
-    description = '\n'.join(
-        [f'{k.rstrip("_")} {map_mode(v)}' for k, v in cycle.items()]
-    )
+def create_mapcycle_embed(cycle: dict[str, dict]) -> discord.Embed:
+    if cycle:
+        descr = '```' + '\n'.join(
+            [f'{k:20} {map_mode(v)}' for k, v in cycle.items()]
+        ) + '```'
+    else:
+        descr = '*Unable to retrieve map cycle*'
     embed = discord.Embed(
         title=EMBED_MAPCYCLE_TITLE,
-        description=description,
+        description=descr,
         color=EMBED_MAPCYCLE_COLOR,
     )
     embed.set_footer(
@@ -75,6 +76,16 @@ async def create_mapcycle_embed(mapcycle_file: str) -> discord.Embed:
         )
     )
     return embed
+
+
+async def create_embed() -> discord.Embed:
+    logger.info('Creating map cycle embed from: %s', bot30.MAPCYCLE_FILE)
+    try:
+        cycle = await parse_mapcycle(bot30.MAPCYCLE_FILE)
+    except Exception:
+        logger.exception('Failed to get Players')
+        cycle = {}
+    return create_mapcycle_embed(cycle)
 
 
 def should_update_embed(message: discord.Message, embed: discord.Embed) -> bool:
@@ -87,7 +98,7 @@ async def update_mapcycle(client: Bot30Client) -> None:
     channel_message, embed = await asyncio.gather(
         client.fetch_embed_message(bot30.CHANNEL_NAME_MAPCYCLE,
                                    EMBED_MAPCYCLE_TITLE),
-        create_mapcycle_embed(bot30.MAPCYCLE_FILE),
+        create_embed(),
     )
     channel, message = channel_message
     if message:
