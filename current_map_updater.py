@@ -12,17 +12,17 @@ logger = logging.getLogger('bot30.current_map')
 
 EMBED_CURRENT_MAP_TITLE = 'Current Map'
 EMBED_CURRENT_MAP_COLOR = discord.Color.dark_red()
-EMBED_NO_PLAYERS = '```' + '.' * (15 + 12) + '```'
+EMBED_NO_PLAYERS = '```\n' + '.' * (15 + 12) + '\n```'
 
 
 def player_score_display(players: list[QuakePlayer]) -> Optional[str]:
     if not players:
         return None
-    return '```' + '\n'.join([
+    return '```\n' + '\n'.join([
         f'{p.name[:15]:15} '
         f'[{p.kills:3}/{p.deaths:2}/{p.assists:2}]'
         for p in players
-    ]) + '```'
+    ]) + '\n```'
 
 
 def add_player_fields(embed: discord.Embed, players: QuakePlayers) -> None:
@@ -39,7 +39,7 @@ def add_player_fields(embed: discord.Embed, players: QuakePlayers) -> None:
         if team_free := player_score_display(players.team_free):
             embed.add_field(name='Players', value=team_free, inline=False)
     if team_spec := [f'{p.name}' for p in players.spectators]:
-        team_spec = '```' + '\n'.join(team_spec) + '```'
+        team_spec = '```\n' + '\n'.join(team_spec) + '\n```'
         embed.add_field(name='Spectators', value=team_spec, inline=False)
 
 
