@@ -86,7 +86,7 @@ class QuakePlayers:
 
     @property
     def mapname(self) -> str:
-        return self.settings['Map']
+        return self.settings.get('Map')
 
     @property
     def player_count(self) -> int:
@@ -94,7 +94,7 @@ class QuakePlayers:
 
     @property
     def gametype(self) -> str:
-        return self.settings['GameType']
+        return self.settings.get('GameType')
 
     @property
     def scores(self) -> Optional[str]:
@@ -160,6 +160,9 @@ class QuakePlayers:
                 f'players {len(players.players)}'
                 f'\n\n{data}'
             )
+
+        if not players.mapname:
+            raise RuntimeError(f'Mapname not set.\n\n{data}')
 
         players.players.sort(reverse=True)
         return players
