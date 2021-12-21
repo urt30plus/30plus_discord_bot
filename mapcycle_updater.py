@@ -59,9 +59,9 @@ async def parse_mapcycle(mapcycle_file: str) -> dict[str, dict]:
 
 def create_mapcycle_embed(cycle: dict[str, dict]) -> discord.Embed:
     if cycle:
-        descr = '```' + '\n'.join(
+        descr = '```\n' + '\n'.join(
             [f'{k:20} {map_mode(v)}' for k, v in cycle.items()]
-        ) + '```'
+        ) + '\n```'
     else:
         descr = '*Unable to retrieve map cycle*'
     embed = discord.Embed(
@@ -83,7 +83,7 @@ async def create_embed() -> discord.Embed:
     try:
         cycle = await parse_mapcycle(bot30.MAPCYCLE_FILE)
     except Exception:
-        logger.exception('Failed to get Players')
+        logger.exception('Failed to parse mapcycle file')
         cycle = {}
     return create_mapcycle_embed(cycle)
 
