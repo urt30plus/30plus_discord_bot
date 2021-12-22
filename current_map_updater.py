@@ -55,7 +55,7 @@ def create_players_embed(players: QuakePlayers) -> discord.Embed:
     if players:
         embed = discord.Embed(
             title=EMBED_CURRENT_MAP_TITLE,
-            description=players.mapname,
+            description=f'```{players.mapname:60}```',
             colour=discord.Colour.green(),
         )
         if players.players:
