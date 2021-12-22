@@ -57,7 +57,7 @@ async def parse_mapcycle(mapcycle_file: str) -> dict[str, dict]:
 def create_mapcycle_embed(cycle: dict[str, dict]) -> discord.Embed:
     if cycle:
         descr = '```\n' + '\n'.join(
-            [f'{k:20} {map_mode(v)}' for k, v in cycle.items()]
+            [f'{k:30} {map_mode(v)}' for k, v in cycle.items()]
         ) + '\n```'
         color = discord.Colour.blue()
     else:
