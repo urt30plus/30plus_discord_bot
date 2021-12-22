@@ -11,7 +11,6 @@ from bot30.models import QuakePlayers, QuakePlayer
 logger = logging.getLogger('bot30.current_map')
 
 EMBED_CURRENT_MAP_TITLE = 'Current Map'
-EMBED_CURRENT_MAP_COLOR = discord.Color.dark_red()
 EMBED_NO_PLAYERS = '```\n' + '.' * (15 + 12) + '\n```'
 
 
@@ -53,14 +52,12 @@ async def get_players() -> QuakePlayers:
 
 
 def create_players_embed(players: QuakePlayers) -> discord.Embed:
-    descr = players.mapname if players else '*Unable to retrieve map info*'
-    embed = discord.Embed(
-        title=EMBED_CURRENT_MAP_TITLE,
-        description=descr,
-        color=EMBED_CURRENT_MAP_COLOR,
-    )
-    embed.set_footer(text=f'\n\nLast Updated: {bot30.utc_now_str()}')
     if players:
+        embed = discord.Embed(
+            title=EMBED_CURRENT_MAP_TITLE,
+            description=players.mapname,
+            colour=discord.Colour.green(),
+        )
         if players.players:
             info = f'{players.gametime} / {players.player_count}'
             embed.add_field(name='Game Time / Player Count', value=info,
@@ -68,6 +65,14 @@ def create_players_embed(players: QuakePlayers) -> discord.Embed:
             add_player_fields(embed, players)
         else:
             embed.description += '\n\n*No players online*'
+            embed.colour = discord.Colour.light_gray()
+    else:
+        embed = discord.Embed(
+            title=EMBED_CURRENT_MAP_TITLE,
+            description='*Unable to retrieve map info*',
+            colour=discord.Colour.red(),
+        )
+    embed.set_footer(text=f'\n\nLast Updated: {bot30.utc_now_str()}')
     return embed
 
 

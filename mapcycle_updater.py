@@ -11,7 +11,6 @@ from bot30.models import QuakeGameType
 logger = logging.getLogger('bot30.mapcycle')
 
 EMBED_MAPCYCLE_TITLE = 'Map Cycle'
-EMBED_MAPCYCLE_COLOR = discord.Color.dark_blue()
 
 
 def map_mode(map_opts: dict[str, str]) -> str:
@@ -24,10 +23,8 @@ def map_mode(map_opts: dict[str, str]) -> str:
         result = QuakeGameType(game_type).name
     if map_opts.get('g_instagib') == '1':
         result += ' Instagib'
-    if result == QuakeGameType.CTF.name:
-        return ''
-    else:
-        return f'({result})'
+
+    return '' if result == QuakeGameType.CTF.name else f'({result})'
 
 
 def parse_mapcycle_lines(lines: list[str]) -> dict[str, dict]:
@@ -62,12 +59,14 @@ def create_mapcycle_embed(cycle: dict[str, dict]) -> discord.Embed:
         descr = '```\n' + '\n'.join(
             [f'{k:20} {map_mode(v)}' for k, v in cycle.items()]
         ) + '\n```'
+        color = discord.Colour.blue()
     else:
         descr = '*Unable to retrieve map cycle*'
+        color = discord.Colour.red()
     embed = discord.Embed(
         title=EMBED_MAPCYCLE_TITLE,
         description=descr,
-        color=EMBED_MAPCYCLE_COLOR,
+        colour=color,
     )
     embed.set_footer(
         text=(
