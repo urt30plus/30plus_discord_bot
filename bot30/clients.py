@@ -120,10 +120,10 @@ class QuakeClient:
             if data:
                 return data.decode(self.ENCODING)
             else:
-                logger.warning('Rcon players no data on try %s', i + 1)
+                logger.warning('Rcon %s: no data on try %s', cmd, i + 1)
                 await asyncio.sleep(timeout)
         else:
-            raise RuntimeError('No data returned for Rcon players')
+            raise RuntimeError(f'No data returned: Rcon {cmd}')
 
     async def _receive(self, timeout: float = 0.5) -> bytearray:
         result = bytearray()
@@ -144,8 +144,9 @@ class QuakeClient:
             timeout: float = 0.5,
             retries: int = 2,
     ) -> QuakePlayers:
-        data = await self._send_rcon('players', timeout, retries)
-        logger.debug('RCON players payload:\n%s', data)
+        cmd = 'players'
+        data = await self._send_rcon(cmd, timeout, retries)
+        logger.debug('RCON %s payload:\n%s', cmd, data)
         return QuakePlayers.from_string(data)
 
     async def close(self) -> None:
