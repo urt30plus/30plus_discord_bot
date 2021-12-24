@@ -111,6 +111,20 @@ class QuakeClient:
         if self.stream is None:
             self.stream = await asyncio_dgram.connect((self.host, self.port))
 
+    async def _send_rcon(self, cmd: str, timeout: float, retries: int) -> str:
+        rcon_cmd = f'rcon "{self.rcon_pass}" {cmd}\n'.encode(self.ENCODING)
+        rcon_cmd = self.CMD_PREFIX + rcon_cmd
+        for i in range(retries):
+            await self.stream.send(rcon_cmd)
+            data = await self._receive(timeout=timeout)
+            if data:
+                return data.decode(self.ENCODING)
+            else:
+                logger.warning('Rcon players no data on try %s', i + 1)
+                await asyncio.sleep(timeout)
+        else:
+            raise RuntimeError('No data returned for Rcon players')
+
     async def _receive(self, timeout: float = 0.5) -> bytearray:
         result = bytearray()
         while True:
@@ -126,12 +140,11 @@ class QuakeClient:
 
     async def players(
             self,
+            *,
             timeout: float = 0.5,
+            retries: int = 2,
     ) -> QuakePlayers:
-        cmd = f'rcon "{self.rcon_pass}" players\n'.encode(self.ENCODING)
-        await self.stream.send(self.CMD_PREFIX + cmd)
-        data = await self._receive(timeout=timeout)
-        data = data.decode(self.ENCODING)
+        data = await self._send_rcon('players', timeout, retries)
         logger.debug('RCON players payload:\n%s', data)
         return QuakePlayers.from_string(data)
 
