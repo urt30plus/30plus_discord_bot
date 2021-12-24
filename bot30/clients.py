@@ -111,9 +111,14 @@ class QuakeClient:
         if self.stream is None:
             self.stream = await asyncio_dgram.connect((self.host, self.port))
 
+    def _create_rcon_cmd(self, cmd: str) -> bytes:
+        return (
+            self.CMD_PREFIX +
+            f'rcon "{self.rcon_pass}" {cmd}\n'.encode(self.ENCODING)
+        )
+
     async def _send_rcon(self, cmd: str, timeout: float, retries: int) -> str:
-        rcon_cmd = f'rcon "{self.rcon_pass}" {cmd}\n'.encode(self.ENCODING)
-        rcon_cmd = self.CMD_PREFIX + rcon_cmd
+        rcon_cmd = self._create_rcon_cmd(cmd)
         for i in range(retries):
             await self.stream.send(rcon_cmd)
             data = await self._receive(timeout=timeout)
