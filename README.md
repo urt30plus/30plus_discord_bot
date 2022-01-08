@@ -1,4 +1,4 @@
-# 30+ UrT Slack Bot
+# 30+ UrT Discord Bot
 
 A simple bot used to post game server related information to our Discord
 server.
