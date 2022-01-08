@@ -96,6 +96,10 @@ class Bot30Client(discord.Client):
         )
 
 
+class QuakeClientError(Exception):
+    pass
+
+
 class QuakeClient:
     CMD_PREFIX = b'\xFF' * 4
     REPLY_PREFIX = CMD_PREFIX + b'print\n'
@@ -119,16 +123,16 @@ class QuakeClient:
 
     async def _send_rcon(self, cmd: str, timeout: float, retries: int) -> str:
         rcon_cmd = self._create_rcon_cmd(cmd)
-        for i in range(retries):
+        for i in range(1, retries + 1):
             await self.stream.send(rcon_cmd)
             data = await self._receive(timeout=timeout)
             if data:
                 return data.decode(self.ENCODING)
             else:
-                logger.warning('Rcon %s: no data on try %s', cmd, i + 1)
-                await asyncio.sleep(timeout)
+                logger.warning('Rcon %s: no data on try %s', cmd, i)
+                await asyncio.sleep(timeout * i + 1)
         else:
-            raise RuntimeError(f'No data returned: Rcon {cmd}')
+            raise QuakeClientError(f'No data returned: Rcon {cmd}')
 
     async def _receive(self, timeout: float = 0.5) -> bytearray:
         result = bytearray()
@@ -146,8 +150,8 @@ class QuakeClient:
     async def players(
             self,
             *,
-            timeout: float = 0.5,
-            retries: int = 2,
+            timeout: float = 0.75,
+            retries: int = 3,
     ) -> QuakePlayers:
         cmd = 'players'
         data = await self._send_rcon(cmd, timeout, retries)
