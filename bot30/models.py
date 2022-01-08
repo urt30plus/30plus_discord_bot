@@ -26,7 +26,7 @@ class QuakePlayer:
 
     RE_PLAYER = re.compile(r'^(?P<slot>[0-9]+):(?P<name>.*)\s+'
                            r'TEAM:(?P<team>RED|BLUE|SPECTATOR|FREE)\s+'
-                           r'KILLS:(?P<kill>[0-9]+)\s+'
+                           r'KILLS:(?P<kill>[-]?[0-9]+)\s+'
                            r'DEATHS:(?P<death>[0-9]+)\s+'
                            r'ASSISTS:(?P<assist>[0-9]+)\s+'
                            r'PING:(?P<ping>[0-9]+|CNCT|ZMBI)\s+'
