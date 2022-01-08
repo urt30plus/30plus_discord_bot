@@ -11,14 +11,14 @@ from bot30.models import QuakePlayers, QuakePlayer
 logger = logging.getLogger('bot30.current_map')
 
 EMBED_CURRENT_MAP_TITLE = 'Current Map'
-EMBED_NO_PLAYERS = '```\n' + '.' * (15 + 12) + '\n```'
+EMBED_NO_PLAYERS = '```\n' + '.' * (17 + 12) + '\n```'
 
 
 def player_score_display(players: list[QuakePlayer]) -> Optional[str]:
     if not players:
         return None
     return '```\n' + '\n'.join([
-        f'{p.name[:15]:15} '
+        f'{p.name[:17]:17} '
         f'[{p.kills:3}/{p.deaths:2}/{p.assists:2}]'
         for p in players
     ]) + '\n```'
@@ -55,7 +55,7 @@ def create_players_embed(players: QuakePlayers) -> discord.Embed:
     if players:
         embed = discord.Embed(
             title=EMBED_CURRENT_MAP_TITLE,
-            description=f'```{players.mapname:60}```',
+            description=f'```\n{players.mapname:60}\n```',
             colour=discord.Colour.green(),
         )
         if players.players:
