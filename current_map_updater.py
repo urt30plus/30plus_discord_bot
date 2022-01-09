@@ -78,7 +78,7 @@ def create_players_embed(players: QuakePlayers) -> discord.Embed:
             description='*Unable to retrieve map info*',
             colour=discord.Colour.red(),
         )
-    embed.set_footer(text=f'\n\nLast Updated: {bot30.utc_now_str()}')
+    embed.set_footer(text=f'\n\nLast Updated: {bot30.utc_now_str(secs=True)}')
     return embed
 
 

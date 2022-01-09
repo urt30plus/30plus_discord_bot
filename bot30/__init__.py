@@ -57,6 +57,10 @@ LOGGING_CONFIG = {
 logging.config.dictConfig(LOGGING_CONFIG)
 
 
-def utc_now_str() -> str:
+def utc_now_str(secs: bool = False) -> str:
     utc_now = datetime.datetime.now(tz=datetime.timezone.utc)
-    return utc_now.strftime("%Y-%m-%d %H:%M %Z")
+    if secs:
+        fmt = '%Y-%m-%d %H:%M:%S %Z'
+    else:
+        fmt = '%Y-%m-%d %H:%M %Z'
+    return utc_now.strftime(fmt)
