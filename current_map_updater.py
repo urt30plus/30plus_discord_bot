@@ -1,5 +1,6 @@
 import asyncio
 import logging
+import time
 from typing import Optional
 
 import discord
@@ -9,6 +10,11 @@ from bot30.clients import Bot30Client, QuakeClient
 from bot30.models import QuakePlayers, QuakePlayer
 
 logger = logging.getLogger('bot30.current_map')
+
+# Max time in secs to allow this process to run
+MAX_RUN_TIME = 60
+
+START_TICK = time.monotonic()
 
 EMBED_CURRENT_MAP_TITLE = 'Current Map'
 EMBED_NO_PLAYERS = '```\n' + '.' * (17 + 12) + '\n```'
@@ -94,6 +100,19 @@ def should_update_embed(message: discord.Message, embed: discord.Embed) -> bool:
     )
 
 
+async def update_message_embed_periodically(
+        message: discord.Message,
+        delay: float = 5.0,
+) -> None:
+    stop_at = START_TICK + (MAX_RUN_TIME - delay - 1.5)
+    while time.monotonic() < stop_at:
+        await asyncio.sleep(delay)
+        embed = await create_embed()
+        await message.edit(embed=embed)
+        if not embed.fields:
+            break
+
+
 async def update_current_map(client: Bot30Client) -> None:
     await client.login(bot30.BOT_TOKEN)
     embed: discord.Embed
@@ -108,6 +127,7 @@ async def update_current_map(client: Bot30Client) -> None:
         if should_update_embed(message, embed):
             logger.info('Updating existing message: %s', message.id)
             await message.edit(embed=embed)
+            await update_message_embed_periodically(message)
         else:
             logger.info('Existing message embed is up to date')
     else:
@@ -121,7 +141,7 @@ async def async_main() -> None:
     client = Bot30Client(bot30.BOT_USER, bot30.BOT_SERVER_NAME)
     logger.info('%s', client)
     try:
-        await asyncio.wait_for(update_current_map(client), timeout=30)
+        await asyncio.wait_for(update_current_map(client), timeout=MAX_RUN_TIME)
     except Exception as exc:
         logger.exception(exc)
         raise
