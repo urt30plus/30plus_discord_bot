@@ -77,7 +77,6 @@ def create_players_embed(players: QuakePlayers) -> discord.Embed:
 
 
 async def create_embed() -> discord.Embed:
-    logger.info('Creating current map embed')
     try:
         players = await get_players()
     except Exception:
