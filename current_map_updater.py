@@ -45,6 +45,31 @@ def add_player_fields(embed: discord.Embed, players: QuakePlayers) -> None:
         embed.add_field(name='Spectators', value=team_spec, inline=False)
 
 
+def add_mapinfo_field(embed: discord.Embed, players: QuakePlayers) -> None:
+    info = f'{players.gametime} / {players.player_count}'
+    embed.add_field(name='Game Time / Player Count', value=info, inline=False)
+
+
+def create_players_embed(players: QuakePlayers) -> discord.Embed:
+    embed = discord.Embed(title=EMBED_CURRENT_MAP_TITLE)
+
+    if players:
+        embed.description = f'```\n{players.mapname:60}\n```'
+        if players.players:
+            embed.colour = discord.Colour.green()
+            add_mapinfo_field(embed, players)
+            add_player_fields(embed, players)
+        else:
+            embed.description += '\n*No players online*'
+            embed.colour = discord.Colour.light_gray()
+    else:
+        embed.colour = discord.Colour.red()
+        embed.description = '*Unable to retrieve map information*'
+
+    embed.set_footer(text=f'\n\nLast Updated: {bot30.utc_now_str(secs=True)}')
+    return embed
+
+
 async def get_players() -> QuakePlayers:
     async with QuakeClient(
             host=bot30.GAME_SERVER_IP,
@@ -52,31 +77,6 @@ async def get_players() -> QuakePlayers:
             rcon_pass=bot30.GAME_SERVER_RCON_PASS,
     ) as c:
         return await c.players()
-
-
-def create_players_embed(players: QuakePlayers) -> discord.Embed:
-    if players:
-        embed = discord.Embed(
-            title=EMBED_CURRENT_MAP_TITLE,
-            description=f'```\n{players.mapname:60}\n```',
-            colour=discord.Colour.green(),
-        )
-        if players.players:
-            info = f'{players.gametime} / {players.player_count}'
-            embed.add_field(name='Game Time / Player Count', value=info,
-                            inline=False)
-            add_player_fields(embed, players)
-        else:
-            embed.description += '\n\n*No players online*'
-            embed.colour = discord.Colour.light_gray()
-    else:
-        embed = discord.Embed(
-            title=EMBED_CURRENT_MAP_TITLE,
-            description='*Unable to retrieve map info*',
-            colour=discord.Colour.red(),
-        )
-    embed.set_footer(text=f'\n\nLast Updated: {bot30.utc_now_str(secs=True)}')
-    return embed
 
 
 async def create_embed() -> discord.Embed:
