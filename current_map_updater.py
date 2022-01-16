@@ -46,8 +46,17 @@ def add_player_fields(embed: discord.Embed, players: QuakePlayers) -> None:
 
 
 def add_mapinfo_field(embed: discord.Embed, players: QuakePlayers) -> None:
-    info = f'{players.gametime} / {players.player_count}'
-    embed.add_field(name='Game Time / Player Count', value=info, inline=False)
+    info = f'{players.gametime} / Total:{players.player_count:2}'
+    if (spec_count := len(players.spectators)) != players.player_count:
+        if (free_count := len(players.team_free)) > 0:
+            if spec_count:
+                info += f'  F:{free_count:2}'
+        else:
+            info += f'  R:{len(players.team_red):2}  B:{len(players.team_blue):2}'
+        if spec_count:
+            info += f'  S:{spec_count:2}'
+    info = f'```\n{info}\n```'
+    embed.add_field(name='Game Time / Player Counts', value=info, inline=False)
 
 
 def create_players_embed(players: QuakePlayers) -> discord.Embed:
