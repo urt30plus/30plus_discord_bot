@@ -1,6 +1,6 @@
 import asyncio
 import logging
-from typing import List, Optional
+from typing import Optional
 
 import asyncio_dgram
 import discord
@@ -8,6 +8,10 @@ import discord
 from bot30.models import QuakePlayers
 
 logger = logging.getLogger(__name__)
+
+
+class Bot30ClientError(Exception):
+    pass
 
 
 class Bot30Client(discord.Client):
@@ -19,10 +23,10 @@ class Bot30Client(discord.Client):
             *args,
             **kwargs
     ) -> None:
+        super().__init__(*args, **kwargs)
         self.bot_user = bot_user
         self.server_name = server_name
         self._guild = None
-        super().__init__(*args, **kwargs)
 
     async def login(self, token: str, *, bot: bool = True) -> None:
         await super().login(token, bot=bot)
@@ -31,7 +35,7 @@ class Bot30Client(discord.Client):
                 self._guild = guild
                 break
         else:
-            raise LookupError(f'Server {self.server_name} not found')
+            raise Bot30ClientError(f'Server {self.server_name} not found')
 
     async def _channel_by_name(self, name: str) -> discord.TextChannel:
         logger.info('Looking for channel named [%s]', name)
@@ -41,13 +45,13 @@ class Bot30Client(discord.Client):
                 logger.info('Found channel: %s [%s]', ch.name, ch.id)
                 return ch
         else:
-            raise LookupError(f'Channel {name} not found')
+            raise Bot30ClientError(f'Channel {name} not found')
 
     async def _last_messages(
             self,
             channel: discord.TextChannel,
             limit: int = 1,
-    ) -> List[discord.Message]:
+    ) -> list[discord.Message]:
         messages = []
         logger.info('Fetching last %s messages if posted by %r in channel %s',
                     limit, self.bot_user, channel.name)
