@@ -2,7 +2,12 @@ import dataclasses
 import enum
 import functools
 import re
+from collections import namedtuple
 from typing import Optional
+
+SCORE_TYPES = ('kills', 'deaths', 'assists')
+
+PlayerScore = namedtuple('PlayerScore', SCORE_TYPES)
 
 
 class QuakeGameType(enum.Enum):
@@ -26,29 +31,31 @@ class QuakePlayer:
 
     RE_PLAYER = re.compile(r'^(?P<slot>[0-9]+):(?P<name>.*)\s+'
                            r'TEAM:(?P<team>RED|BLUE|SPECTATOR|FREE)\s+'
-                           r'KILLS:(?P<kill>[-]?[0-9]+)\s+'
-                           r'DEATHS:(?P<death>[0-9]+)\s+'
-                           r'ASSISTS:(?P<assist>[0-9]+)\s+'
+                           r'KILLS:(?P<kills>[-]?[0-9]+)\s+'
+                           r'DEATHS:(?P<deaths>[0-9]+)\s+'
+                           r'ASSISTS:(?P<assists>[0-9]+)\s+'
                            r'PING:(?P<ping>[0-9]+|CNCT|ZMBI)\s+'
                            r'AUTH:(?P<auth>.*)\s+'
-                           r'IP:(?P<ip>.*)$', re.IGNORECASE)
+                           r'IP:(?P<ip_address>.*)$', re.IGNORECASE)
 
     name: str
     team: str
-    score: tuple[str, ...]
-    ping: str
+    score: PlayerScore
+    ping: int
+    auth: str
+    ip_address: str
 
     @property
     def kills(self) -> int:
-        return int(self.score[0])
+        return self.score.kills
 
     @property
     def deaths(self) -> int:
-        return int(self.score[1])
+        return self.score.deaths
 
     @property
     def assists(self) -> int:
-        return int(self.score[2])
+        return self.score.assists
 
     def __lt__(self, other) -> bool:
         if not isinstance(other, QuakePlayer):
@@ -61,18 +68,24 @@ class QuakePlayer:
     @staticmethod
     def from_string(data: str) -> 'QuakePlayer':
         if m := re.match(QuakePlayer.RE_PLAYER, data.strip()):
+            name = re.sub(QuakePlayer.RE_COLOR, '', m['name'])
+            score = PlayerScore._make(int(m[x]) for x in SCORE_TYPES)
+            ping = -1 if m['ping'] in ('CNCT', 'ZMBI') else int(m['ping'])
             return QuakePlayer(
-                name=re.sub(QuakePlayer.RE_COLOR, '', m['name']),
+                name=name,
                 team=m['team'],
-                score=(m['kill'], m['death'], m['assist']),
-                ping=m['ping'],
+                score=score,
+                ping=ping,
+                auth=m['auth'],
+                ip_address=m['ip_address'],
             )
         raise ValueError(f'Invalid data: {data}')
 
     def __repr__(self) -> str:
         return (
             'QuakePlayer('
-            f'name={self.name}, team={self.team}, score={self.score}, ping={self.ping}'
+            f'name={self.name}, team={self.team}, score={self.score}, '
+            f'ping={self.ping}, auth={self.auth}, ip_address={self.ip_address}'
             ')'
         )
 
@@ -85,7 +98,7 @@ class QuakePlayers:
         self.players = []
 
     @property
-    def mapname(self) -> str:
+    def map_name(self) -> str:
         return self.settings.get('Map')
 
     @property
@@ -93,15 +106,18 @@ class QuakePlayers:
         return int(self.settings.get('Players', 0))
 
     @property
-    def gametype(self) -> str:
-        return self.settings.get('GameType')
+    def game_type(self) -> str:
+        if game_type := self.settings.get('GameType'):
+            if game_type == 'FFA':
+                game_type = 'Gun Game/FFA'
+            return game_type
 
     @property
     def scores(self) -> Optional[str]:
         return self.settings.get('Scores')
 
     @property
-    def gametime(self) -> str:
+    def game_time(self) -> str:
         return self.settings['GameTime']
 
     @property
@@ -161,8 +177,8 @@ class QuakePlayers:
                 f'\n\n{data}'
             )
 
-        if not players.mapname:
-            raise RuntimeError(f'Mapname not set.\n\n{data}')
+        if not players.map_name:
+            raise RuntimeError(f'Map name not set.\n\n{data}')
 
         players.players.sort(reverse=True)
         return players
@@ -170,8 +186,8 @@ class QuakePlayers:
     def __str__(self) -> str:
         return (
             'QuakePlayers('
-            f'map={self.mapname}, '
-            f'gametype={self.gametype}, '
+            f'map_name={self.map_name}, '
+            f'game_type={self.game_type}, '
             f'players={self.player_count}'
             ')'
         )

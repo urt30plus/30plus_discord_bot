@@ -46,7 +46,7 @@ def add_player_fields(embed: discord.Embed, players: QuakePlayers) -> None:
 
 
 def add_mapinfo_field(embed: discord.Embed, players: QuakePlayers) -> None:
-    info = f'{players.gametime} / Total:{players.player_count:2}'
+    info = f'{players.game_time} / Total:{players.player_count:2}'
     if (spec_count := len(players.spectators)) != players.player_count:
         if (free_count := len(players.team_free)) > 0:
             if spec_count:
@@ -63,7 +63,11 @@ def create_players_embed(players: QuakePlayers) -> discord.Embed:
     embed = discord.Embed(title=EMBED_CURRENT_MAP_TITLE)
 
     if players:
-        embed.description = f'```\n{players.mapname:60}\n```'
+        if game_type := players.game_type:
+            description = f'{players.map_name} ({game_type})'
+        else:
+            description = players.map_name
+        embed.description = f'```\n{description:60}\n```'
         if players.players:
             embed.colour = discord.Colour.green()
             add_mapinfo_field(embed, players)

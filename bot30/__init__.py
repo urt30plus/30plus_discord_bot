@@ -35,7 +35,6 @@ LOGGING_CONFIG = {
     },
     'handlers': {
         'default': {
-            'level': LOG_LEVEL,
             'formatter': 'standard',
             'class': 'logging.StreamHandler',
             'stream': 'ext://sys.stdout',
@@ -44,18 +43,13 @@ LOGGING_CONFIG = {
     'loggers': {
         '': {
             'handlers': ['default'],
-            'level': 'WARNING',
-            'propagate': False,
+            'level': logging.WARNING,
         },
         'bot30': {
-            'handlers': ['default'],
             'level': LOG_LEVEL,
-            'propagate': False,
         },
-        '__main__': {  # if __name__ == '__main__'
-            'handlers': ['default'],
-            'level': 'DEBUG',
-            'propagate': False,
+        'discord': {
+            'level': logging.ERROR,
         },
     }
 }

@@ -92,12 +92,12 @@ class QuakePlayersTestCase(unittest.TestCase):
         2:baz^7 TEAM:RED KILLS:32 DEATHS:18 ASSISTS:0 PING:98 AUTH:baz IP:127.0.0.1
         '''
         players = QuakePlayers.from_string(dedent(s))
-        self.assertEqual(players.mapname, 'ut4_abbey')
+        self.assertEqual(players.map_name, 'ut4_abbey')
         self.assertEqual(players.player_count, 3)
-        self.assertEqual(players.gametype, 'CTF')
+        self.assertEqual(players.game_type, 'CTF')
         self.assertEqual(players.score_red, '5')
         self.assertEqual(players.score_blue, '10')
-        self.assertEqual(players.gametime, '00:12:04')
+        self.assertEqual(players.game_time, '00:12:04')
         self.assertEqual(len(players.players), 3)
         self.assertListEqual([p.name for p in players.team_red], ['baz', 'foo'])
 
@@ -114,11 +114,11 @@ class QuakePlayersTestCase(unittest.TestCase):
         2:baz^7 TEAM:FREE KILLS:32 DEATHS:18 ASSISTS:0 PING:98 AUTH:baz IP:127.0.0.1
         '''
         players = QuakePlayers.from_string(dedent(s))
-        self.assertEqual(players.mapname, 'ut4_docks')
+        self.assertEqual(players.map_name, 'ut4_docks')
         self.assertEqual(players.player_count, 3)
-        self.assertEqual(players.gametype, 'FFA')
+        self.assertEqual(players.game_type, 'Gun Game/FFA')
         self.assertIsNone(players.score_red)
         self.assertIsNone(players.score_blue)
-        self.assertEqual(players.gametime, '00:12:04')
+        self.assertEqual(players.game_time, '00:12:04')
         self.assertEqual(len(players.players), 3)
         self.assertListEqual([p.name for p in players.team_free], ['baz', 'bar', 'foo'])
