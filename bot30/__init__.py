@@ -1,6 +1,7 @@
 import datetime
-import logging.config
+import logging
 import os
+import sys
 
 import dotenv
 
@@ -25,36 +26,12 @@ GAME_SERVER_RCON_PASS = os.getenv('GAME_SERVER_RCON_PASS')
 # Delay in fractional seconds between updates when there are players online
 CURRENT_MAP_UPDATE_DELAY = float(os.getenv('CURRENT_MAP_UPDATE_DELAY', '5.0'))
 
-LOGGING_CONFIG = {
-    'version': 1,
-    'disable_existing_loggers': True,
-    'formatters': {
-        'standard': {
-            'format': '%(asctime)s [%(levelname)s] %(name)s: %(message)s',
-        },
-    },
-    'handlers': {
-        'default': {
-            'formatter': 'standard',
-            'class': 'logging.StreamHandler',
-            'stream': 'ext://sys.stdout',
-        },
-    },
-    'loggers': {
-        '': {
-            'handlers': ['default'],
-            'level': logging.WARNING,
-        },
-        'bot30': {
-            'level': LOG_LEVEL,
-        },
-        'discord': {
-            'level': logging.ERROR,
-        },
-    }
-}
-
-logging.config.dictConfig(LOGGING_CONFIG)
+logging.basicConfig(
+    format='%(asctime)s [%(levelname)s] %(name)s: %(message)s',
+    stream=sys.stdout,
+)
+logging.getLogger('bot30').setLevel(LOG_LEVEL)
+logging.getLogger('discord').setLevel(logging.ERROR)
 
 
 def utc_now_str(secs: bool = False) -> str:
