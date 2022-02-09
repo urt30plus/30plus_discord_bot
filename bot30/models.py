@@ -90,7 +90,7 @@ class Player:
         )
 
 
-class Players:
+class Server:
     RE_SCORES = re.compile(r'\s*R:(?P<red>[\d]+)\s+B:(?P<blue>[\d]+)')
 
     def __init__(self) -> None:
@@ -156,36 +156,36 @@ class Players:
         return self._get_team('BLUE')
 
     @staticmethod
-    def from_string(data: str) -> 'Players':
-        players = Players()
+    def from_string(data: str) -> 'Server':
+        server = Server()
         in_header = True
         for line in data.splitlines():
             k, v = line.split(':', maxsplit=1)
             if in_header:
-                players.settings[k] = v.strip()
+                server.settings[k] = v.strip()
                 if k == 'GameTime':
                     in_header = False
             else:
                 if k.isnumeric():
                     player = Player.from_string(line)
-                    players.players.append(player)
+                    server.players.append(player)
 
-        if players.player_count != len(players.players):
+        if server.player_count != len(server.players):
             raise RuntimeError(
-                f'Player count {players.player_count} does not match '
-                f'players {len(players.players)}'
+                f'Player count {server.player_count} does not match '
+                f'players {len(server.players)}'
                 f'\n\n{data}'
             )
 
-        if not players.map_name:
+        if not server.map_name:
             raise RuntimeError(f'Map name not set.\n\n{data}')
 
-        players.players.sort(reverse=True)
-        return players
+        server.players.sort(reverse=True)
+        return server
 
     def __str__(self) -> str:
         return (
-            'Players('
+            'Server('
             f'map_name={self.map_name}, '
             f'game_type={self.game_type}, '
             f'players={self.player_count}'

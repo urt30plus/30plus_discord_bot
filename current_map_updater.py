@@ -7,7 +7,7 @@ import discord
 
 import bot30
 from bot30.clients import Bot30Client, RCONClient
-from bot30.models import Players, Player
+from bot30.models import Server, Player
 
 logger = logging.getLogger('bot30.current_map')
 
@@ -27,78 +27,78 @@ def player_score_display(players: list[Player]) -> Optional[str]:
     ]) + '\n```'
 
 
-def add_player_fields(embed: discord.Embed, players: Players) -> None:
-    team_r = player_score_display(players.team_red)
-    team_b = player_score_display(players.team_blue)
+def add_player_fields(embed: discord.Embed, server: Server) -> None:
+    team_r = player_score_display(server.team_red)
+    team_b = player_score_display(server.team_blue)
     if team_r or team_b:
-        embed.add_field(name=f'Red ({players.score_red})',
+        embed.add_field(name=f'Red ({server.score_red})',
                         value=team_r or EMBED_NO_PLAYERS,
                         inline=True)
-        embed.add_field(name=f'Blue ({players.score_blue})',
+        embed.add_field(name=f'Blue ({server.score_blue})',
                         value=team_b or EMBED_NO_PLAYERS,
                         inline=True)
     else:
-        if team_free := player_score_display(players.team_free):
+        if team_free := player_score_display(server.team_free):
             embed.add_field(name='Players', value=team_free, inline=False)
-    if team_spec := [f'{p.name}' for p in players.spectators]:
+    if team_spec := [f'{p.name}' for p in server.spectators]:
         team_spec = '```\n' + '\n'.join(team_spec) + '\n```'
         embed.add_field(name='Spectators', value=team_spec, inline=False)
 
 
-def add_mapinfo_field(embed: discord.Embed, players: Players) -> None:
-    info = f'{players.game_time} / Total:{players.player_count:2}'
-    if (spec_count := len(players.spectators)) != players.player_count:
-        if (free_count := len(players.team_free)) > 0:
+def add_mapinfo_field(embed: discord.Embed, server: Server) -> None:
+    info = f'{server.game_time} / Total:{server.player_count:2}'
+    if (spec_count := len(server.spectators)) != server.player_count:
+        if (free_count := len(server.team_free)) > 0:
             if spec_count:
                 info += f'  F:{free_count:2}'
         else:
-            info += f'  R:{len(players.team_red):2}  B:{len(players.team_blue):2}'
+            info += f'  R:{len(server.team_red):2}  B:{len(server.team_blue):2}'
         if spec_count:
             info += f'  S:{spec_count:2}'
     info = f'```\n{info}\n```'
     embed.add_field(name='Game Time / Player Counts', value=info, inline=False)
 
 
-def create_players_embed(players: Players) -> discord.Embed:
+def create_server_embed(server: Server) -> discord.Embed:
     embed = discord.Embed(title=EMBED_CURRENT_MAP_TITLE)
 
-    if players:
-        if game_type := players.game_type:
-            description = f'{players.map_name} ({game_type})'
+    if server:
+        if game_type := server.game_type:
+            description = f'{server.map_name} ({game_type})'
         else:
-            description = players.map_name
+            description = server.map_name
         embed.description = f'```\n{description:60}\n```'
-        if players.players:
+        if server.players:
             embed.colour = discord.Colour.green()
-            add_mapinfo_field(embed, players)
-            add_player_fields(embed, players)
+            add_mapinfo_field(embed, server)
+            add_player_fields(embed, server)
         else:
             embed.description += '\n*No players online*'
             embed.colour = discord.Colour.light_gray()
     else:
         embed.colour = discord.Colour.red()
-        embed.description = '*Unable to retrieve map information*'
+        embed.description = '*Unable to retrieve server information*'
 
     embed.set_footer(text=f'\n\nLast Updated: {bot30.utc_now_str(secs=True)}')
     return embed
 
 
-async def get_players() -> Players:
+async def get_server_info() -> Server:
     async with RCONClient(
             host=bot30.GAME_SERVER_IP,
             port=bot30.GAME_SERVER_PORT,
             rcon_pass=bot30.GAME_SERVER_RCON_PASS,
     ) as c:
-        return await c.players()
+        return await c.server_info()
 
 
 async def create_embed() -> discord.Embed:
     try:
-        players = await get_players()
+        server = await get_server_info()
     except Exception:
-        logger.exception('Failed to get Players')
-        players = None
-    return create_players_embed(players)
+        logger.exception('Failed to get server info')
+        server = None
+    return create_server_embed(server)
 
 
 def should_update_embed(message: discord.Message, embed: discord.Embed) -> bool:

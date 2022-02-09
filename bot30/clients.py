@@ -5,7 +5,7 @@ from typing import Optional
 import asyncio_dgram
 import discord
 
-from bot30.models import Players
+from bot30.models import Server
 
 logger = logging.getLogger(__name__)
 
@@ -151,16 +151,16 @@ class RCONClient:
                 break
         return result
 
-    async def players(
+    async def server_info(
             self,
             *,
             timeout: float = 0.75,
             retries: int = 3,
-    ) -> Players:
+    ) -> Server:
         cmd = 'players'
         data = await self._send_rcon(cmd, timeout, retries)
         logger.debug('RCON %s payload:\n%s', cmd, data)
-        return Players.from_string(data)
+        return Server.from_string(data)
 
     async def close(self) -> None:
         self.stream.close()
