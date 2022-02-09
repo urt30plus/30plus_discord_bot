@@ -6,7 +6,7 @@ import discord
 
 import bot30
 from bot30.clients import Bot30Client
-from bot30.models import QuakeGameType
+from bot30.models import GameType
 
 logger = logging.getLogger('bot30.mapcycle')
 
@@ -15,16 +15,16 @@ EMBED_MAPCYCLE_TITLE = 'Map Cycle'
 
 def map_mode(map_opts: dict[str, str]) -> str:
     if map_opts.get('mod_gungame', '0') == '1':
-        result = QuakeGameType.GUNGAME.name + ' d3mod'
+        result = GameType.GUNGAME.name + ' d3mod'
     elif map_opts.get('mod_ctf', '0') == '1':
-        result = QuakeGameType.CTF.name + ' d3mod'
+        result = GameType.CTF.name + ' d3mod'
     else:
-        game_type = map_opts.get('g_gametype', QuakeGameType.CTF.value)
-        result = QuakeGameType(game_type).name
+        game_type = map_opts.get('g_gametype', GameType.CTF.value)
+        result = GameType(game_type).name
     if map_opts.get('g_instagib') == '1':
         result += ' Instagib'
 
-    return '' if result == QuakeGameType.CTF.name else f'({result})'
+    return '' if result == GameType.CTF.name else f'({result})'
 
 
 def parse_mapcycle_lines(lines: list[str]) -> dict[str, dict]:

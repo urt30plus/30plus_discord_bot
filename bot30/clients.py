@@ -5,7 +5,7 @@ from typing import Optional
 import asyncio_dgram
 import discord
 
-from bot30.models import QuakePlayers
+from bot30.models import Players
 
 logger = logging.getLogger(__name__)
 
@@ -100,11 +100,11 @@ class Bot30Client(discord.Client):
         )
 
 
-class QuakeClientError(Exception):
+class RCONClientError(Exception):
     pass
 
 
-class QuakeClient:
+class RCONClient:
     CMD_PREFIX = b'\xFF' * 4
     REPLY_PREFIX = CMD_PREFIX + b'print\n'
     ENCODING = 'latin-1'
@@ -133,10 +133,10 @@ class QuakeClient:
             if data:
                 return data.decode(self.ENCODING)
             else:
-                logger.warning('Rcon %s: no data on try %s', cmd, i)
+                logger.warning('RCON %s: no data on try %s', cmd, i)
                 await asyncio.sleep(timeout * i + 1)
         else:
-            raise QuakeClientError(f'No data returned: Rcon {cmd}')
+            raise RCONClientError(f'No data returned: RCON {cmd}')
 
     async def _receive(self, timeout: float = 0.5) -> bytearray:
         result = bytearray()
@@ -156,11 +156,11 @@ class QuakeClient:
             *,
             timeout: float = 0.75,
             retries: int = 3,
-    ) -> QuakePlayers:
+    ) -> Players:
         cmd = 'players'
         data = await self._send_rcon(cmd, timeout, retries)
         logger.debug('RCON %s payload:\n%s', cmd, data)
-        return QuakePlayers.from_string(data)
+        return Players.from_string(data)
 
     async def close(self) -> None:
         self.stream.close()

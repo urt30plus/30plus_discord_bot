@@ -6,8 +6,8 @@ from typing import Optional
 import discord
 
 import bot30
-from bot30.clients import Bot30Client, QuakeClient
-from bot30.models import QuakePlayers, QuakePlayer
+from bot30.clients import Bot30Client, RCONClient
+from bot30.models import Players, Player
 
 logger = logging.getLogger('bot30.current_map')
 
@@ -17,7 +17,7 @@ EMBED_CURRENT_MAP_TITLE = 'Current Map'
 EMBED_NO_PLAYERS = '```\n' + '.' * (17 + 12) + '\n```'
 
 
-def player_score_display(players: list[QuakePlayer]) -> Optional[str]:
+def player_score_display(players: list[Player]) -> Optional[str]:
     if not players:
         return None
     return '```\n' + '\n'.join([
@@ -27,7 +27,7 @@ def player_score_display(players: list[QuakePlayer]) -> Optional[str]:
     ]) + '\n```'
 
 
-def add_player_fields(embed: discord.Embed, players: QuakePlayers) -> None:
+def add_player_fields(embed: discord.Embed, players: Players) -> None:
     team_r = player_score_display(players.team_red)
     team_b = player_score_display(players.team_blue)
     if team_r or team_b:
@@ -45,7 +45,7 @@ def add_player_fields(embed: discord.Embed, players: QuakePlayers) -> None:
         embed.add_field(name='Spectators', value=team_spec, inline=False)
 
 
-def add_mapinfo_field(embed: discord.Embed, players: QuakePlayers) -> None:
+def add_mapinfo_field(embed: discord.Embed, players: Players) -> None:
     info = f'{players.game_time} / Total:{players.player_count:2}'
     if (spec_count := len(players.spectators)) != players.player_count:
         if (free_count := len(players.team_free)) > 0:
@@ -59,7 +59,7 @@ def add_mapinfo_field(embed: discord.Embed, players: QuakePlayers) -> None:
     embed.add_field(name='Game Time / Player Counts', value=info, inline=False)
 
 
-def create_players_embed(players: QuakePlayers) -> discord.Embed:
+def create_players_embed(players: Players) -> discord.Embed:
     embed = discord.Embed(title=EMBED_CURRENT_MAP_TITLE)
 
     if players:
@@ -83,8 +83,8 @@ def create_players_embed(players: QuakePlayers) -> discord.Embed:
     return embed
 
 
-async def get_players() -> QuakePlayers:
-    async with QuakeClient(
+async def get_players() -> Players:
+    async with RCONClient(
             host=bot30.GAME_SERVER_IP,
             port=bot30.GAME_SERVER_PORT,
             rcon_pass=bot30.GAME_SERVER_RCON_PASS,

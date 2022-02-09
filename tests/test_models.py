@@ -2,18 +2,18 @@ import unittest
 from textwrap import dedent
 
 from bot30.models import (
-    QuakePlayer,
-    QuakePlayers,
+    Player,
+    Players,
 )
 
 
-class QuakePlayerTestCase(unittest.TestCase):
+class PlayerTestCase(unittest.TestCase):
 
     def test_from_string(self):
         s = '''\
         0:foo^7 TEAM:RED KILLS:20 DEATHS:22 ASSISTS:3 PING:98 AUTH:foo IP:127.0.0.1
         '''
-        player = QuakePlayer.from_string(dedent(s))
+        player = Player.from_string(dedent(s))
         self.assertEqual(player.name, 'foo')
         self.assertEqual(player.team, 'RED')
         self.assertEqual(player.kills, 20)
@@ -27,8 +27,8 @@ class QuakePlayerTestCase(unittest.TestCase):
         s2 = '''\
         1:bar^7 TEAM:RED KILLS:20 DEATHS:22 ASSISTS:3 PING:98 AUTH:bar IP:127.0.0.1
         '''
-        p1 = QuakePlayer.from_string(dedent(s1))
-        p2 = QuakePlayer.from_string(dedent(s2))
+        p1 = Player.from_string(dedent(s1))
+        p2 = Player.from_string(dedent(s2))
         self.assertLess(p2, p1)
 
     def test_order_kills(self):
@@ -38,8 +38,8 @@ class QuakePlayerTestCase(unittest.TestCase):
         s2 = '''\
         1:bar^7 TEAM:RED KILLS:20 DEATHS:22 ASSISTS:3 PING:98 AUTH:bar IP:127.0.0.1
         '''
-        p1 = QuakePlayer.from_string(dedent(s1))
-        p2 = QuakePlayer.from_string(dedent(s2))
+        p1 = Player.from_string(dedent(s1))
+        p2 = Player.from_string(dedent(s2))
         self.assertLess(p2, p1)
 
     def test_order_deaths(self):
@@ -49,8 +49,8 @@ class QuakePlayerTestCase(unittest.TestCase):
         s2 = '''\
         1:bar^7 TEAM:RED KILLS:20 DEATHS:22 ASSISTS:3 PING:98 AUTH:bar IP:127.0.0.1
         '''
-        p1 = QuakePlayer.from_string(dedent(s1))
-        p2 = QuakePlayer.from_string(dedent(s2))
+        p1 = Player.from_string(dedent(s1))
+        p2 = Player.from_string(dedent(s2))
         self.assertLess(p2, p1)
 
     def test_order_assists(self):
@@ -60,15 +60,15 @@ class QuakePlayerTestCase(unittest.TestCase):
         s2 = '''\
         1:bar^7 TEAM:RED KILLS:20 DEATHS:22 ASSISTS:3 PING:98 AUTH:bar IP:127.0.0.1
         '''
-        p1 = QuakePlayer.from_string(dedent(s1))
-        p2 = QuakePlayer.from_string(dedent(s2))
+        p1 = Player.from_string(dedent(s1))
+        p2 = Player.from_string(dedent(s2))
         self.assertLess(p2, p1)
 
     def test_negative_kills(self):
         s = '''\
         0:foo^7 TEAM:RED KILLS:-1 DEATHS:2 ASSISTS:0 PING:98 AUTH:foo IP:127.0.0.1:58537
         '''
-        player = QuakePlayer.from_string(dedent(s))
+        player = Player.from_string(dedent(s))
         self.assertEqual(player.name, 'foo')
         self.assertEqual(player.team, 'RED')
         self.assertEqual(player.kills, -1)
@@ -76,7 +76,7 @@ class QuakePlayerTestCase(unittest.TestCase):
         self.assertEqual(player.assists, 0)
 
 
-class QuakePlayersTestCase(unittest.TestCase):
+class PlayersTestCase(unittest.TestCase):
 
     def test_from_string_ctf(self):
         s = '''\
@@ -91,7 +91,7 @@ class QuakePlayersTestCase(unittest.TestCase):
         1:bar^7 TEAM:BLUE KILLS:20 DEATHS:9 ASSISTS:0 PING:98 AUTH:bar IP:127.0.0.1
         2:baz^7 TEAM:RED KILLS:32 DEATHS:18 ASSISTS:0 PING:98 AUTH:baz IP:127.0.0.1
         '''
-        players = QuakePlayers.from_string(dedent(s))
+        players = Players.from_string(dedent(s))
         self.assertEqual(players.map_name, 'ut4_abbey')
         self.assertEqual(players.player_count, 3)
         self.assertEqual(players.game_type, 'CTF')
@@ -113,7 +113,7 @@ class QuakePlayersTestCase(unittest.TestCase):
         1:bar^7 TEAM:FREE KILLS:20 DEATHS:9 ASSISTS:0 PING:98 AUTH:bar IP:127.0.0.1
         2:baz^7 TEAM:FREE KILLS:32 DEATHS:18 ASSISTS:0 PING:98 AUTH:baz IP:127.0.0.1
         '''
-        players = QuakePlayers.from_string(dedent(s))
+        players = Players.from_string(dedent(s))
         self.assertEqual(players.map_name, 'ut4_docks')
         self.assertEqual(players.player_count, 3)
         self.assertEqual(players.game_type, 'Gun Game/FFA')

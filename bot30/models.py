@@ -10,7 +10,7 @@ SCORE_TYPES = ('kills', 'deaths', 'assists')
 PlayerScore = namedtuple('PlayerScore', SCORE_TYPES)
 
 
-class QuakeGameType(enum.Enum):
+class GameType(enum.Enum):
     FFA = '0'
     LMS = '1'
     TDM = '3'
@@ -26,7 +26,7 @@ class QuakeGameType(enum.Enum):
 
 @functools.total_ordering
 @dataclasses.dataclass()
-class QuakePlayer:
+class Player:
     RE_COLOR = re.compile(r'(\^\d)')
 
     RE_PLAYER = re.compile(r'^(?P<slot>[0-9]+):(?P<name>.*)\s+'
@@ -58,7 +58,7 @@ class QuakePlayer:
         return self.score.assists
 
     def __lt__(self, other) -> bool:
-        if not isinstance(other, QuakePlayer):
+        if not isinstance(other, Player):
             return NotImplemented
         return (
                 (self.kills, self.deaths * -1, self.assists, self.name) <
@@ -66,12 +66,12 @@ class QuakePlayer:
         )
 
     @staticmethod
-    def from_string(data: str) -> 'QuakePlayer':
-        if m := re.match(QuakePlayer.RE_PLAYER, data.strip()):
-            name = re.sub(QuakePlayer.RE_COLOR, '', m['name'])
+    def from_string(data: str) -> 'Player':
+        if m := re.match(Player.RE_PLAYER, data.strip()):
+            name = re.sub(Player.RE_COLOR, '', m['name'])
             score = PlayerScore._make(int(m[x]) for x in SCORE_TYPES)
             ping = -1 if m['ping'] in ('CNCT', 'ZMBI') else int(m['ping'])
-            return QuakePlayer(
+            return Player(
                 name=name,
                 team=m['team'],
                 score=score,
@@ -83,14 +83,14 @@ class QuakePlayer:
 
     def __repr__(self) -> str:
         return (
-            'QuakePlayer('
+            'Player('
             f'name={self.name}, team={self.team}, score={self.score}, '
             f'ping={self.ping}, auth={self.auth}, ip_address={self.ip_address}'
             ')'
         )
 
 
-class QuakePlayers:
+class Players:
     RE_SCORES = re.compile(r'\s*R:(?P<red>[\d]+)\s+B:(?P<blue>[\d]+)')
 
     def __init__(self) -> None:
@@ -136,28 +136,28 @@ class QuakePlayers:
             return m['blue']
         return None
 
-    def _get_team(self, team_name: str) -> list[QuakePlayer]:
+    def _get_team(self, team_name: str) -> list[Player]:
         return [p for p in self.players if p.team == team_name]
 
     @property
-    def spectators(self) -> list[QuakePlayer]:
+    def spectators(self) -> list[Player]:
         return self._get_team('SPECTATOR')
 
     @property
-    def team_free(self) -> list[QuakePlayer]:
+    def team_free(self) -> list[Player]:
         return self._get_team('FREE')
 
     @property
-    def team_red(self) -> list[QuakePlayer]:
+    def team_red(self) -> list[Player]:
         return self._get_team('RED')
 
     @property
-    def team_blue(self) -> list[QuakePlayer]:
+    def team_blue(self) -> list[Player]:
         return self._get_team('BLUE')
 
     @staticmethod
-    def from_string(data: str) -> 'QuakePlayers':
-        players = QuakePlayers()
+    def from_string(data: str) -> 'Players':
+        players = Players()
         in_header = True
         for line in data.splitlines():
             k, v = line.split(':', maxsplit=1)
@@ -167,7 +167,7 @@ class QuakePlayers:
                     in_header = False
             else:
                 if k.isnumeric():
-                    player = QuakePlayer.from_string(line)
+                    player = Player.from_string(line)
                     players.players.append(player)
 
         if players.player_count != len(players.players):
@@ -185,7 +185,7 @@ class QuakePlayers:
 
     def __str__(self) -> str:
         return (
-            'QuakePlayers('
+            'Players('
             f'map_name={self.map_name}, '
             f'game_type={self.game_type}, '
             f'players={self.player_count}'
