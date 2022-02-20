@@ -10,8 +10,6 @@ from bot30.models import GameType
 
 logger = logging.getLogger('bot30.mapcycle')
 
-EMBED_MAPCYCLE_TITLE = 'Map Cycle'
-
 
 def map_mode(map_opts: dict[str, str]) -> str:
     if map_opts.get('mod_gungame', '0') == '1':
@@ -64,7 +62,7 @@ def create_mapcycle_embed(cycle: dict[str, dict]) -> discord.Embed:
         descr = '*Unable to retrieve map cycle*'
         color = discord.Colour.red()
     embed = discord.Embed(
-        title=EMBED_MAPCYCLE_TITLE,
+        title=bot30.MAPCYCLE_EMBED_TITLE,
         description=descr,
         colour=color,
     )
@@ -96,7 +94,7 @@ async def update_mapcycle(client: Bot30Client) -> None:
     await client.login(bot30.BOT_TOKEN)
     channel_message, embed = await asyncio.gather(
         client.fetch_embed_message(bot30.CHANNEL_NAME_MAPCYCLE,
-                                   EMBED_MAPCYCLE_TITLE),
+                                   bot30.MAPCYCLE_EMBED_TITLE),
         create_embed(),
     )
     channel, message = channel_message

@@ -16,6 +16,7 @@ BOT_TOKEN = os.environ['BOT_TOKEN']
 # Max time in secs to allow this process to run
 BOT_MAX_RUN_TIME = int(os.getenv('BOT_MAX_RUN_TIME', '60'))
 
+MAPCYCLE_EMBED_TITLE = os.environ['MAPCYCLE_EMBED_TITLE']
 CHANNEL_NAME_MAPCYCLE = os.environ['CHANNEL_NAME_MAPCYCLE']
 MAPCYCLE_FILE = os.environ['MAPCYCLE_FILE']
 
@@ -24,6 +25,7 @@ GAME_SERVER_PORT = int(os.getenv('GAME_SERVER_PORT', '27960'))
 GAME_SERVER_RCON_PASS = os.getenv('GAME_SERVER_RCON_PASS')
 
 # Delay in fractional seconds between updates when there are players online
+CURRENT_MAP_EMBED_TITLE = os.environ['CURRENT_MAP_EMBED_TITLE']
 CURRENT_MAP_UPDATE_DELAY = float(os.getenv('CURRENT_MAP_UPDATE_DELAY', '5.0'))
 
 logging.basicConfig(

@@ -13,7 +13,6 @@ logger = logging.getLogger('bot30.current_map')
 
 START_TICK = time.monotonic()
 
-EMBED_CURRENT_MAP_TITLE = 'Current Map'
 EMBED_NO_PLAYERS = '```\n' + '.' * (17 + 12) + '\n```'
 
 
@@ -60,7 +59,7 @@ def add_mapinfo_field(embed: discord.Embed, server: Server) -> None:
 
 
 def create_server_embed(server: Server) -> discord.Embed:
-    embed = discord.Embed(title=EMBED_CURRENT_MAP_TITLE)
+    embed = discord.Embed(title=bot30.CURRENT_MAP_EMBED_TITLE)
 
     if server:
         if game_type := server.game_type:
@@ -126,7 +125,7 @@ async def update_current_map(client: Bot30Client) -> None:
     embed: discord.Embed
     channel_message, embed = await asyncio.gather(
         client.fetch_embed_message(bot30.CHANNEL_NAME_MAPCYCLE,
-                                   EMBED_CURRENT_MAP_TITLE),
+                                   bot30.CURRENT_MAP_EMBED_TITLE),
         create_embed(),
     )
     message: discord.Message
