@@ -26,6 +26,8 @@ jobs:
           BOT_USER: 30+Bot#TEST
           BOT_SERVER_NAME: 30+ Urban Test
           BOT_TOKEN: sekret
+          MAPCYCLE_EMBED_TITLE: Map Cycle
           CHANNEL_NAME_MAPCYCLE: test-mapcycle
           MAPCYCLE_FILE: ./tests/data/mapcycle.txt
+          CURRENT_MAP_EMBED_TITLE: Current Map
         run: python -m unittest
