@@ -169,6 +169,10 @@ class Server:
                 if k.isnumeric():
                     player = Player.from_string(line)
                     server.players.append(player)
+                elif k == 'Map':
+                    # back-to-back messages, start over
+                    server.settings[k] = v.strip()
+                    in_header = True
 
         if server.player_count != len(server.players):
             raise RuntimeError(
