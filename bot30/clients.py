@@ -3,7 +3,7 @@ import logging
 from typing import Optional
 
 import asyncio_dgram
-import discord
+import discord  # noqa discord.py
 
 from bot30.models import Server
 
@@ -23,13 +23,15 @@ class Bot30Client(discord.Client):
             *args,
             **kwargs
     ) -> None:
+        if 'intents' not in kwargs:
+            kwargs['intents'] = discord.Intents.all()
         super().__init__(*args, **kwargs)
         self.bot_user = bot_user
         self.server_name = server_name
         self._guild = None
 
-    async def login(self, token: str, *, bot: bool = True) -> None:
-        await super().login(token, bot=bot)
+    async def login(self, token: str) -> None:
+        await super().login(token)
         async for guild in super().fetch_guilds():
             if guild.name == self.server_name:
                 self._guild = guild
