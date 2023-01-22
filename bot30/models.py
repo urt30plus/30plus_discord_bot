@@ -5,9 +5,7 @@ import re
 from collections import namedtuple
 from typing import Optional
 
-SCORE_TYPES = ('kills', 'deaths', 'assists')
-
-PlayerScore = namedtuple('PlayerScore', SCORE_TYPES)
+PlayerScore = namedtuple('PlayerScore', 'kills deaths assists')
 
 
 class GameType(enum.Enum):
@@ -69,7 +67,7 @@ class Player:
     def from_string(data: str) -> 'Player':
         if m := re.match(Player.RE_PLAYER, data.strip()):
             name = re.sub(Player.RE_COLOR, '', m['name'])
-            score = PlayerScore._make(int(m[x]) for x in SCORE_TYPES)
+            score = PlayerScore._make(int(m[x]) for x in PlayerScore._fields)
             ping = -1 if m['ping'] in ('CNCT', 'ZMBI') else int(m['ping'])
             return Player(
                 name=name,
@@ -94,12 +92,12 @@ class Server:
     RE_SCORES = re.compile(r'\s*R:(?P<red>\d+)\s+B:(?P<blue>\d+)')
 
     def __init__(self) -> None:
-        self.settings = {}
-        self.players = []
+        self.settings: dict[str, str] = {}
+        self.players: list[Player] = []
 
     @property
     def map_name(self) -> str:
-        return self.settings.get('Map')
+        return self.settings.get('Map', 'Unknown')
 
     @property
     def player_count(self) -> int:
@@ -111,6 +109,7 @@ class Server:
             if game_type == 'FFA':
                 game_type = 'Gun Game/FFA'
             return game_type
+        return 'Unknown'
 
     @property
     def scores(self) -> Optional[str]:

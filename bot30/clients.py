@@ -28,7 +28,7 @@ class Bot30Client(discord.Client):
         super().__init__(*args, **kwargs)
         self.bot_user = bot_user
         self.server_name = server_name
-        self._guild = None
+        self._guild: discord.Guild | None = None
 
     async def login(self, token: str) -> None:
         await super().login(token)
@@ -41,11 +41,13 @@ class Bot30Client(discord.Client):
 
     async def _channel_by_name(self, name: str) -> discord.TextChannel:
         logger.info('Looking for channel named [%s]', name)
+        if self._guild is None:
+            raise RuntimeError('Guild has not been set')
         channels = await self._guild.fetch_channels()
         for ch in channels:
             if ch.name == name:
                 logger.info('Found channel: %s [%s]', ch.name, ch.id)
-                return ch
+                return ch  # type:ignore
         else:
             raise Bot30ClientError(f'Channel {name} not found')
 
@@ -92,7 +94,7 @@ class Bot30Client(discord.Client):
             embed_title=embed_title,
             limit=limit,
         )
-        return channel, message
+        return channel, message  # type:ignore
 
     def __str__(self) -> str:
         return (
@@ -115,7 +117,7 @@ class RCONClient:
         self.host = host
         self.port = port
         self.rcon_pass = rcon_pass
-        self.stream = None
+        self.stream: asyncio_dgram.DatagramClient | None = None
 
     async def connect(self):
         if self.stream is None:
@@ -128,6 +130,8 @@ class RCONClient:
         )
 
     async def _send_rcon(self, cmd: str, timeout: float, retries: int) -> str:
+        if self.stream is None:
+            raise RuntimeError('Steam has not been set, must connect first')
         rcon_cmd = self._create_rcon_cmd(cmd)
         for i in range(1, retries + 1):
             await self.stream.send(rcon_cmd)
@@ -141,6 +145,8 @@ class RCONClient:
             raise RCONClientError(f'No data returned: RCON {cmd}')
 
     async def _receive(self, timeout: float = 0.5) -> bytearray:
+        if self.stream is None:
+            raise RuntimeError('Steam has not been set, must connect first')
         result = bytearray()
         while True:
             try:
@@ -165,7 +171,8 @@ class RCONClient:
         return Server.from_string(data)
 
     async def close(self) -> None:
-        self.stream.close()
+        if self.stream is not None:
+            self.stream.close()
 
     async def __aenter__(self):
         await self.connect()
