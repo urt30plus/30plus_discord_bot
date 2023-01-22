@@ -31,7 +31,7 @@ class Player:
 
     RE_PLAYER = re.compile(r'^(?P<slot>[0-9]+):(?P<name>.*)\s+'
                            r'TEAM:(?P<team>RED|BLUE|SPECTATOR|FREE)\s+'
-                           r'KILLS:(?P<kills>[-]?[0-9]+)\s+'
+                           r'KILLS:(?P<kills>-?[0-9]+)\s+'
                            r'DEATHS:(?P<deaths>[0-9]+)\s+'
                            r'ASSISTS:(?P<assists>[0-9]+)\s+'
                            r'PING:(?P<ping>[0-9]+|CNCT|ZMBI)\s+'
@@ -91,7 +91,7 @@ class Player:
 
 
 class Server:
-    RE_SCORES = re.compile(r'\s*R:(?P<red>[\d]+)\s+B:(?P<blue>[\d]+)')
+    RE_SCORES = re.compile(r'\s*R:(?P<red>\d+)\s+B:(?P<blue>\d+)')
 
     def __init__(self) -> None:
         self.settings = {}
