@@ -5,7 +5,7 @@ server.
 
 ## Map Cycle Updater
 
-Posts an embed with the maps in the cycle along with the map mode.
+Posts an embed with the maps in the current cycle along with the map mode.
 
 ## Current Map Info
 
