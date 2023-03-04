@@ -1,0 +1,11 @@
+[tool.mypy]
+packages = "bot30"
+modules = ["current_map_updater", "mapcycle_updater"]
+strict = true
+warn_unreachable = true
+
+[tool.ruff]
+target-version = "py311"
+line-length = 88
+extend-exclude = [".*"]
+extend-select = ["B", "W", "I", "UP", "PL", "RUF"]
