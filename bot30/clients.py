@@ -1,6 +1,6 @@
 import asyncio
 import logging
-from typing import Optional
+from typing import Optional, Self
 
 import asyncio_dgram
 import discord  # noqa discord.py
@@ -16,7 +16,7 @@ class Bot30ClientError(Exception):
 
 class Bot30Client(discord.Client):
 
-    def __init__(
+    def __init__(  # type: ignore[no-untyped-def]
             self,
             bot_user: str,
             server_name: str,
@@ -119,7 +119,7 @@ class RCONClient:
         self.rcon_pass = rcon_pass
         self.stream: asyncio_dgram.DatagramClient | None = None
 
-    async def connect(self):
+    async def connect(self) -> None:
         if self.stream is None:
             self.stream = await asyncio_dgram.connect((self.host, self.port))
 
@@ -174,9 +174,9 @@ class RCONClient:
         if self.stream is not None:
             self.stream.close()
 
-    async def __aenter__(self):
+    async def __aenter__(self) -> Self:
         await self.connect()
         return self
 
-    async def __aexit__(self, exc_type, exc_val, exc_tb):
+    async def __aexit__(self, exc_type, exc_val, exc_tb):  # type: ignore[no-untyped-def]
         await self.close()

@@ -10,6 +10,8 @@ from bot30.models import GameType
 
 logger = logging.getLogger('bot30.mapcycle')
 
+MapCycle = dict[str, dict[str, str]]
+
 
 def map_mode(map_opts: dict[str, str]) -> str:
     if map_opts.get('mod_gungame', '0') == '1':
@@ -25,9 +27,9 @@ def map_mode(map_opts: dict[str, str]) -> str:
     return '' if result == GameType.CTF.name else f'({result})'
 
 
-def parse_mapcycle_lines(lines: list[str]) -> dict[str, dict]:
-    result = {}
-    map_name = None
+def parse_mapcycle_lines(lines: list[str]) -> MapCycle:
+    result: MapCycle = {}
+    map_name = ''
     map_config = None
     for line in lines:
         line = line.strip()
@@ -46,13 +48,13 @@ def parse_mapcycle_lines(lines: list[str]) -> dict[str, dict]:
     return result
 
 
-async def parse_mapcycle(mapcycle_file: str) -> dict[str, dict]:
+async def parse_mapcycle(mapcycle_file: str) -> MapCycle:
     async with aiofiles.open(mapcycle_file, mode='r', encoding='utf-8') as f:
         lines = await f.readlines()
     return parse_mapcycle_lines(lines)
 
 
-def create_mapcycle_embed(cycle: dict[str, dict]) -> discord.Embed:
+def create_mapcycle_embed(cycle: MapCycle) -> discord.Embed:
     if cycle:
         descr = '```\n' + '\n'.join(
             [f'{k:25} {map_mode(v)}' for k, v in cycle.items()]
@@ -86,8 +88,10 @@ async def create_embed() -> discord.Embed:
 
 
 def should_update_embed(message: discord.Message, embed: discord.Embed) -> bool:
-    current_embed = message.embeds[0]
-    return current_embed.description.strip() != embed.description.strip()
+    curr_embed = message.embeds[0]
+    curr_txt = curr_embed.description if curr_embed.description else ''
+    new_txt = embed.description if embed.description else ''
+    return curr_txt.strip() != new_txt.strip()
 
 
 async def update_mapcycle(client: Bot30Client) -> None:

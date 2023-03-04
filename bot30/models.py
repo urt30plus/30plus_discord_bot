@@ -2,10 +2,13 @@ import dataclasses
 import enum
 import functools
 import re
-from collections import namedtuple
-from typing import Optional
+from typing import Any, NamedTuple, Optional
 
-PlayerScore = namedtuple('PlayerScore', 'kills deaths assists')
+
+class PlayerScore(NamedTuple):
+    kills: int
+    deaths: int
+    assists: int
 
 
 class GameType(enum.Enum):
@@ -23,7 +26,7 @@ class GameType(enum.Enum):
 
 
 @functools.total_ordering
-@dataclasses.dataclass()
+@dataclasses.dataclass
 class Player:
     RE_COLOR = re.compile(r'(\^\d)')
 
@@ -55,7 +58,7 @@ class Player:
     def assists(self) -> int:
         return self.score.assists
 
-    def __lt__(self, other) -> bool:
+    def __lt__(self, other: Any) -> bool:
         if not isinstance(other, Player):
             return NotImplemented
         return (

@@ -40,8 +40,8 @@ def add_player_fields(embed: discord.Embed, server: Server) -> None:
         if team_free := player_score_display(server.team_free):
             embed.add_field(name='Players', value=team_free, inline=False)
     if team_spec := [f'{p.name}' for p in server.spectators]:
-        team_spec = '```\n' + '\n'.join(team_spec) + '\n```'
-        embed.add_field(name='Spectators', value=team_spec, inline=False)
+        specs = '```\n' + '\n'.join(team_spec) + '\n```'
+        embed.add_field(name='Spectators', value=specs, inline=False)
 
 
 def add_mapinfo_field(embed: discord.Embed, server: Server) -> None:
@@ -58,7 +58,7 @@ def add_mapinfo_field(embed: discord.Embed, server: Server) -> None:
     embed.add_field(name='Game Time / Player Counts', value=info, inline=False)
 
 
-def create_server_embed(server: Server) -> discord.Embed:
+def create_server_embed(server: Server | None) -> discord.Embed:
     embed = discord.Embed(title=bot30.CURRENT_MAP_EMBED_TITLE)
 
     if server:
@@ -73,7 +73,7 @@ def create_server_embed(server: Server) -> discord.Embed:
             add_player_fields(embed, server)
         else:
             embed.description += '\n*No players online*'
-            embed.colour = discord.Colour.light_gray()
+            embed.colour = discord.Colour.light_gray()  # type: ignore[call-arg,misc]
     else:
         embed.colour = discord.Colour.red()
         embed.description = '*Unable to retrieve server information*'
@@ -83,10 +83,12 @@ def create_server_embed(server: Server) -> discord.Embed:
 
 
 async def get_server_info() -> Server:
+    if not (rcon_pass := bot30.GAME_SERVER_RCON_PASS):
+        raise RuntimeError('RCON password is not set')
     async with RCONClient(
             host=bot30.GAME_SERVER_IP,
             port=bot30.GAME_SERVER_PORT,
-            rcon_pass=bot30.GAME_SERVER_RCON_PASS,
+            rcon_pass=rcon_pass,
     ) as c:
         return await c.server_info()
 
@@ -102,11 +104,11 @@ async def create_embed() -> discord.Embed:
 
 def should_update_embed(message: discord.Message, embed: discord.Embed) -> bool:
     current_embed = message.embeds[0]
-    return (
-            current_embed.fields or
-            embed.fields or
-            current_embed.description.strip() != embed.description.strip()
-    )
+    if current_embed.fields or embed.fields:
+        return True
+    curr_txt = current_embed.description if current_embed.description else ''
+    new_txt = embed.description if embed.description else ''
+    return curr_txt.strip() != new_txt.strip()
 
 
 async def update_message_embed_periodically(message: discord.Message) -> None:
