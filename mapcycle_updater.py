@@ -1,5 +1,6 @@
 import asyncio
 import logging
+import time
 
 import aiofiles
 import discord
@@ -68,11 +69,9 @@ def create_mapcycle_embed(cycle: MapCycle) -> discord.Embed:
         description=descr,
         colour=color,
     )
-    embed.set_footer(
-        text=(
-            f'\n\nTotal Maps: {len(cycle)}'
-            f'\nLast Updated: {bot30.utc_now_str()}'
-        )
+    embed.add_field(
+        name=f'{len(cycle)} maps last updated <t:{int(time.time())}>',
+        value=''
     )
     return embed
 
