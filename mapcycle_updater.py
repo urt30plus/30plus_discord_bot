@@ -71,8 +71,10 @@ def create_mapcycle_embed(cycle: MapCycle) -> discord.Embed:
     )
     embed.add_field(
         name=f'{len(cycle)} maps last updated <t:{int(time.time())}>',
-        value=''
+        value='',
+        inline=False,
     )
+
     return embed
 
 

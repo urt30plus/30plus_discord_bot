@@ -78,7 +78,12 @@ def create_server_embed(server: Server | None) -> discord.Embed:
         embed.colour = discord.Colour.red()
         embed.description = '*Unable to retrieve server information*'
 
-    embed.add_field(name=f'Last updated <t:{int(time.time())}:R>', value='')
+    embed.add_field(
+        name=f'Last updated <t:{int(time.time())}:R>',
+        value='',
+        inline=False,
+    )
+
     return embed
 
 
