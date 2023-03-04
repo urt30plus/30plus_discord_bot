@@ -105,7 +105,9 @@ async def create_embed() -> discord.Embed:
 def should_update_embed(message: discord.Message, embed: discord.Embed) -> bool:
     current_embed = message.embeds[0]
     if current_embed.fields or embed.fields:
-        return True
+        # ignore our last updated field
+        if len(current_embed.fields) > 1 or len(embed.fields) > 1:
+            return True
     curr_txt = current_embed.description if current_embed.description else ''
     new_txt = embed.description if embed.description else ''
     return curr_txt.strip() != new_txt.strip()
