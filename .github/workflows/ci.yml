@@ -22,7 +22,13 @@ jobs:
           python -m pip install --upgrade pip setuptools wheel
           pip install -r requirements-dev.txt
       - name: Run mypy
-        run: mypy
+        run: |
+          mypy --version
+          mypy
+      - name: Run ruff
+        run: |
+          ruff --version
+          ruff check .
       - name: Run tests
         env:
           BOT_USER: 30+Bot#TEST
