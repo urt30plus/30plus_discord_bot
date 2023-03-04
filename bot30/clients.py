@@ -1,9 +1,11 @@
 import asyncio
 import logging
-from typing import Optional, Self
+from typing import Self
 
 import asyncio_dgram
-import discord  # noqa discord.py
+
+# noinspection PyPackageRequirements
+import discord
 
 from bot30.models import Server
 
@@ -48,8 +50,8 @@ class Bot30Client(discord.Client):
             if ch.name == name:
                 logger.info('Found channel: %s [%s]', ch.name, ch.id)
                 return ch  # type:ignore
-        else:
-            raise Bot30ClientError(f'Channel {name} not found')
+
+        raise Bot30ClientError(f'Channel {name} not found')
 
     async def _last_messages(
             self,
@@ -72,7 +74,7 @@ class Bot30Client(discord.Client):
             channel: discord.TextChannel,
             embed_title: str,
             limit: int = 5,
-    ) -> Optional[discord.Message]:
+    ) -> discord.Message | None:
         messages = await self._last_messages(channel, limit=limit)
         logger.info('Looking for message with the %r embed title',
                     embed_title)
@@ -141,8 +143,8 @@ class RCONClient:
             else:
                 logger.warning('RCON %s: no data on try %s', cmd, i)
                 await asyncio.sleep(timeout * i + 1)
-        else:
-            raise RCONClientError(f'No data returned: RCON {cmd}')
+
+        raise RCONClientError(f'No data returned: RCON {cmd}')
 
     async def _receive(self, timeout: float = 0.5) -> bytearray:
         if self.stream is None:
@@ -178,5 +180,10 @@ class RCONClient:
         await self.connect()
         return self
 
-    async def __aexit__(self, exc_type, exc_val, exc_tb):  # type: ignore[no-untyped-def]
+    async def __aexit__(  # type: ignore[no-untyped-def]
+            self,
+            exc_type,
+            exc_val,
+            exc_tb,
+    ):
         await self.close()

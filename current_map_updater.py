@@ -1,13 +1,13 @@
 import asyncio
 import logging
 import time
-from typing import Optional
 
+# noinspection PyPackageRequirements
 import discord
 
 import bot30
 from bot30.clients import Bot30Client, RCONClient
-from bot30.models import Server, Player
+from bot30.models import Player, Server
 
 logger = logging.getLogger('bot30.current_map')
 
@@ -16,7 +16,7 @@ START_TICK = time.monotonic()
 EMBED_NO_PLAYERS = '```\n' + '.' * (17 + 12) + '\n```'
 
 
-def player_score_display(players: list[Player]) -> Optional[str]:
+def player_score_display(players: list[Player]) -> str | None:
     if not players:
         return None
     return '```\n' + '\n'.join([
@@ -36,9 +36,9 @@ def add_player_fields(embed: discord.Embed, server: Server) -> None:
         embed.add_field(name=f'Blue ({server.score_blue})',
                         value=team_b or EMBED_NO_PLAYERS,
                         inline=True)
-    else:
-        if team_free := player_score_display(server.team_free):
-            embed.add_field(name='Players', value=team_free, inline=False)
+    elif team_free := player_score_display(server.team_free):
+        embed.add_field(name='Players', value=team_free, inline=False)
+
     if team_spec := [f'{p.name}' for p in server.spectators]:
         specs = '```\n' + '\n'.join(team_spec) + '\n```'
         embed.add_field(name='Spectators', value=specs, inline=False)
@@ -96,8 +96,8 @@ async def get_server_info() -> Server:
 async def create_embed() -> discord.Embed:
     try:
         server = await get_server_info()
-    except Exception:
-        logger.exception('Failed to get server info')
+    except Exception as exc:
+        logger.exception('Failed to get server info: %r', exc)
         server = None
     return create_server_embed(server)
 

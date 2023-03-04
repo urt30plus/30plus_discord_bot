@@ -4,7 +4,6 @@ from mapcycle_updater import (
     map_mode,
     parse_mapcycle,
 )
-
 from tests import TEST_DATA_DIR
 
 

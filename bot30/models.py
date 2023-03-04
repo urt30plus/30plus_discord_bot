@@ -2,7 +2,7 @@ import dataclasses
 import enum
 import functools
 import re
-from typing import Any, NamedTuple, Optional
+from typing import Any, NamedTuple
 
 
 class PlayerScore(NamedTuple):
@@ -115,7 +115,7 @@ class Server:
         return 'Unknown'
 
     @property
-    def scores(self) -> Optional[str]:
+    def scores(self) -> str | None:
         return self.settings.get('Scores')
 
     @property
@@ -123,7 +123,7 @@ class Server:
         return self.settings['GameTime']
 
     @property
-    def score_red(self) -> Optional[str]:
+    def score_red(self) -> str | None:
         if not self.scores:
             return None
         if m := re.match(self.RE_SCORES, self.scores):
@@ -131,7 +131,7 @@ class Server:
         return None
 
     @property
-    def score_blue(self) -> Optional[str]:
+    def score_blue(self) -> str | None:
         if not self.scores:
             return None
         if m := re.match(self.RE_SCORES, self.scores):
@@ -167,14 +167,13 @@ class Server:
                 server.settings[k] = v.strip()
                 if k == 'GameTime':
                     in_header = False
-            else:
-                if k.isnumeric():
-                    player = Player.from_string(line)
-                    server.players.append(player)
-                elif k == 'Map':
-                    # back-to-back messages, start over
-                    server.settings[k] = v.strip()
-                    in_header = True
+            elif k.isnumeric():
+                player = Player.from_string(line)
+                server.players.append(player)
+            elif k == 'Map':
+                # back-to-back messages, start over
+                server.settings[k] = v.strip()
+                in_header = True
 
         if server.player_count != len(server.players):
             raise RuntimeError(

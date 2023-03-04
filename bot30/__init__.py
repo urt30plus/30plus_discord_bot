@@ -37,7 +37,7 @@ logging.getLogger('discord').setLevel(logging.ERROR)
 
 
 def utc_now_str(secs: bool = False) -> str:
-    utc_now = datetime.datetime.now(tz=datetime.timezone.utc)
+    utc_now = datetime.datetime.now(tz=datetime.UTC)
     if secs:
         fmt = '%Y-%m-%d %H:%M:%S %Z'
     else:

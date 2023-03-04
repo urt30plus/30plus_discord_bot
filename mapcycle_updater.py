@@ -31,8 +31,8 @@ def parse_mapcycle_lines(lines: list[str]) -> MapCycle:
     result: MapCycle = {}
     map_name = ''
     map_config = None
-    for line in lines:
-        line = line.strip()
+    for raw_line in lines:
+        line = raw_line.strip()
         if not line or line.startswith('//'):
             continue
         elif line == '{':
