@@ -20,7 +20,9 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip setuptools wheel
-          pip install -r requirements.txt
+          pip install -r requirements-dev.txt
+      - name: Run mypy
+        run: mypy
       - name: Run tests
         env:
           BOT_USER: 30+Bot#TEST
