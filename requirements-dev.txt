@@ -1,5 +1,0 @@
--r requirements.txt
-
-mypy
-pre-commit
-types-aiofiles
