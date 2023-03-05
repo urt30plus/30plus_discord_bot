@@ -12,4 +12,16 @@ warn_unreachable = true
 target-version = "py311"
 line-length = 88
 extend-exclude = [".*"]
-extend-select = ["B", "W", "I", "UP", "PL", "RUF"]
+extend-select = [
+    "B",  # flake8-bugbear
+    "E",  # pycodestyle (errors)
+    "F",  # Pyflakes
+    "I",   # isort
+    "PL",  # Pylint
+    "RUF",
+    "S",  # flake8-bandit
+    "T20",  # flake8-print
+    "UP",  # pyupgrade
+    "W",  # pycodestyle (warnings)
+    "YTT",  # flake8-2020
+]
