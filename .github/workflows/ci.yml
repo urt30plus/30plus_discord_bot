@@ -22,14 +22,6 @@ jobs:
           python -m pip install --upgrade pip setuptools wheel
           pip install --upgrade --upgrade-strategy eager -e .[dev]
       - name: Run pre-commit checks
-        run: |
-          pre-commit --version
-          pre-commit run --all-files
-      - name: Run mypy
-        run: |
-          mypy --version
-          mypy
-      - name: Run tests
         env:
           BOT_USER: 30+Bot#TEST
           BOT_SERVER_NAME: 30+ Urban Test
@@ -38,4 +30,6 @@ jobs:
           CHANNEL_NAME_MAPCYCLE: test-mapcycle
           MAPCYCLE_FILE: ./tests/data/mapcycle.txt
           CURRENT_MAP_EMBED_TITLE: Current Map
-        run: python -m unittest
+        run: |
+          pre-commit --version
+          pre-commit run --all-files
