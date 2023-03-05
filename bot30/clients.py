@@ -17,16 +17,15 @@ class Bot30ClientError(Exception):
 
 
 class Bot30Client(discord.Client):
-
     def __init__(  # type: ignore[no-untyped-def]
-            self,
-            bot_user: str,
-            server_name: str,
-            *args,
-            **kwargs
+        self,
+        bot_user: str,
+        server_name: str,
+        *args,
+        **kwargs,
     ) -> None:
-        if 'intents' not in kwargs:
-            kwargs['intents'] = discord.Intents.all()
+        if "intents" not in kwargs:
+            kwargs["intents"] = discord.Intents.all()
         super().__init__(*args, **kwargs)
         self.bot_user = bot_user
         self.server_name = server_name
@@ -39,45 +38,48 @@ class Bot30Client(discord.Client):
                 self._guild = guild
                 break
         else:
-            raise Bot30ClientError(f'Server {self.server_name} not found')
+            raise Bot30ClientError(f"Server {self.server_name} not found")
 
     async def _channel_by_name(self, name: str) -> discord.TextChannel:
-        logger.info('Looking for channel named [%s]', name)
+        logger.info("Looking for channel named [%s]", name)
         if self._guild is None:
-            raise RuntimeError('Guild has not been set')
+            raise RuntimeError("Guild has not been set")
         channels = await self._guild.fetch_channels()
         for ch in channels:
             if ch.name == name:
-                logger.info('Found channel: %s [%s]', ch.name, ch.id)
+                logger.info("Found channel: %s [%s]", ch.name, ch.id)
                 return ch  # type:ignore
 
-        raise Bot30ClientError(f'Channel {name} not found')
+        raise Bot30ClientError(f"Channel {name} not found")
 
     async def _last_messages(
-            self,
-            channel: discord.TextChannel,
-            limit: int = 1,
+        self,
+        channel: discord.TextChannel,
+        limit: int = 1,
     ) -> list[discord.Message]:
         messages = []
-        logger.info('Fetching last %s messages if posted by %r in channel %s',
-                    limit, self.bot_user, channel.name)
+        logger.info(
+            "Fetching last %s messages if posted by %r in channel %s",
+            limit,
+            self.bot_user,
+            channel.name,
+        )
         async for msg in channel.history(limit=limit):
             author = msg.author
-            author_user = f'{author.name}#{author.discriminator}'
+            author_user = f"{author.name}#{author.discriminator}"
             if author.bot and author_user == self.bot_user:
                 messages.append(msg)
-        logger.info('Found [%s] messages', len(messages))
+        logger.info("Found [%s] messages", len(messages))
         return messages
 
     async def _find_message_by_embed_title(
-            self,
-            channel: discord.TextChannel,
-            embed_title: str,
-            limit: int = 5,
+        self,
+        channel: discord.TextChannel,
+        embed_title: str,
+        limit: int = 5,
     ) -> discord.Message | None:
         messages = await self._last_messages(channel, limit=limit)
-        logger.info('Looking for message with the %r embed title',
-                    embed_title)
+        logger.info("Looking for message with the %r embed title", embed_title)
         for msg in messages:
             for embed in msg.embeds:
                 if embed.title == embed_title:
@@ -85,10 +87,10 @@ class Bot30Client(discord.Client):
         return None
 
     async def fetch_embed_message(
-            self,
-            channel_name: str,
-            embed_title: str,
-            limit: int = 5,
+        self,
+        channel_name: str,
+        embed_title: str,
+        limit: int = 5,
     ) -> tuple[discord.TextChannel, discord.Message]:
         channel = await self._channel_by_name(channel_name)
         message = await self._find_message_by_embed_title(
@@ -100,9 +102,9 @@ class Bot30Client(discord.Client):
 
     def __str__(self) -> str:
         return (
-            'Bot30Client('
-            f'bot_user={self.bot_user!r}, server={self.server_name!r}'
-            ')'
+            "Bot30Client("
+            f"bot_user={self.bot_user!r}, server={self.server_name!r}"
+            ")"
         )
 
 
@@ -111,9 +113,9 @@ class RCONClientError(Exception):
 
 
 class RCONClient:
-    CMD_PREFIX = b'\xFF' * 4
-    REPLY_PREFIX = CMD_PREFIX + b'print\n'
-    ENCODING = 'latin-1'
+    CMD_PREFIX = b"\xFF" * 4
+    REPLY_PREFIX = CMD_PREFIX + b"print\n"
+    ENCODING = "latin-1"
 
     def __init__(self, host: str, port: int, rcon_pass: str) -> None:
         self.host = host
@@ -126,14 +128,13 @@ class RCONClient:
             self.stream = await asyncio_dgram.connect((self.host, self.port))
 
     def _create_rcon_cmd(self, cmd: str) -> bytes:
-        return (
-            self.CMD_PREFIX +
-            f'rcon "{self.rcon_pass}" {cmd}\n'.encode(self.ENCODING)
+        return self.CMD_PREFIX + f'rcon "{self.rcon_pass}" {cmd}\n'.encode(
+            self.ENCODING
         )
 
     async def _send_rcon(self, cmd: str, timeout: float, retries: int) -> str:
         if self.stream is None:
-            raise RuntimeError('Steam has not been set, must connect first')
+            raise RuntimeError("Steam has not been set, must connect first")
         rcon_cmd = self._create_rcon_cmd(cmd)
         for i in range(1, retries + 1):
             await self.stream.send(rcon_cmd)
@@ -141,14 +142,14 @@ class RCONClient:
             if data:
                 return data.decode(self.ENCODING)
             else:
-                logger.warning('RCON %s: no data on try %s', cmd, i)
+                logger.warning("RCON %s: no data on try %s", cmd, i)
                 await asyncio.sleep(timeout * i + 1)
 
-        raise RCONClientError(f'No data returned: RCON {cmd}')
+        raise RCONClientError(f"No data returned: RCON {cmd}")
 
     async def _receive(self, timeout: float = 0.5) -> bytearray:
         if self.stream is None:
-            raise RuntimeError('Steam has not been set, must connect first')
+            raise RuntimeError("Steam has not been set, must connect first")
         result = bytearray()
         while True:
             try:
@@ -156,20 +157,20 @@ class RCONClient:
                     self.stream.recv(),
                     timeout=timeout,
                 )
-                result += data.replace(self.REPLY_PREFIX, b'', 1)
+                result += data.replace(self.REPLY_PREFIX, b"", 1)
             except asyncio.TimeoutError:
                 break
         return result
 
     async def server_info(
-            self,
-            *,
-            timeout: float = 0.75,
-            retries: int = 3,
+        self,
+        *,
+        timeout: float = 0.75,
+        retries: int = 3,
     ) -> Server:
-        cmd = 'players'
+        cmd = "players"
         data = await self._send_rcon(cmd, timeout, retries)
-        logger.debug('RCON %s payload:\n%s', cmd, data)
+        logger.debug("RCON %s payload:\n%s", cmd, data)
         return Server.from_string(data)
 
     async def close(self) -> None:
@@ -181,9 +182,9 @@ class RCONClient:
         return self
 
     async def __aexit__(  # type: ignore[no-untyped-def]
-            self,
-            exc_type,
-            exc_val,
-            exc_tb,
+        self,
+        exc_type,
+        exc_val,
+        exc_tb,
     ):
         await self.close()

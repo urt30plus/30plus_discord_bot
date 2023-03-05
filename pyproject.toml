@@ -1,3 +1,7 @@
+[tool.black]
+target-version = ["py311"]
+line-length = 88
+
 [tool.mypy]
 packages = "bot30"
 modules = ["current_map_updater", "mapcycle_updater"]

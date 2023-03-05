@@ -12,32 +12,35 @@ class PlayerScore(NamedTuple):
 
 
 class GameType(enum.Enum):
-    FFA = '0'
-    LMS = '1'
-    TDM = '3'
-    TS = '4'
-    FTL = '5'
-    CAH = '6'
-    CTF = '7'
-    BOMB = '8'
-    JUMP = '9'
-    FREEZETAG = '10'
-    GUNGAME = '11'
+    FFA = "0"
+    LMS = "1"
+    TDM = "3"
+    TS = "4"
+    FTL = "5"
+    CAH = "6"
+    CTF = "7"
+    BOMB = "8"
+    JUMP = "9"
+    FREEZETAG = "10"
+    GUNGAME = "11"
 
 
 @functools.total_ordering
 @dataclasses.dataclass
 class Player:
-    RE_COLOR = re.compile(r'(\^\d)')
+    RE_COLOR = re.compile(r"(\^\d)")
 
-    RE_PLAYER = re.compile(r'^(?P<slot>[0-9]+):(?P<name>.*)\s+'
-                           r'TEAM:(?P<team>RED|BLUE|SPECTATOR|FREE)\s+'
-                           r'KILLS:(?P<kills>-?[0-9]+)\s+'
-                           r'DEATHS:(?P<deaths>[0-9]+)\s+'
-                           r'ASSISTS:(?P<assists>[0-9]+)\s+'
-                           r'PING:(?P<ping>[0-9]+|CNCT|ZMBI)\s+'
-                           r'AUTH:(?P<auth>.*)\s+'
-                           r'IP:(?P<ip_address>.*)$', re.IGNORECASE)
+    RE_PLAYER = re.compile(
+        r"^(?P<slot>[0-9]+):(?P<name>.*)\s+"
+        r"TEAM:(?P<team>RED|BLUE|SPECTATOR|FREE)\s+"
+        r"KILLS:(?P<kills>-?[0-9]+)\s+"
+        r"DEATHS:(?P<deaths>[0-9]+)\s+"
+        r"ASSISTS:(?P<assists>[0-9]+)\s+"
+        r"PING:(?P<ping>[0-9]+|CNCT|ZMBI)\s+"
+        r"AUTH:(?P<auth>.*)\s+"
+        r"IP:(?P<ip_address>.*)$",
+        re.IGNORECASE,
+    )
 
     name: str
     team: str
@@ -61,38 +64,40 @@ class Player:
     def __lt__(self, other: Any) -> bool:
         if not isinstance(other, Player):
             return NotImplemented
-        return (
-                (self.kills, self.deaths * -1, self.assists, self.name) <
-                (other.kills, other.deaths * -1, other.assists, other.name)
+        return (self.kills, self.deaths * -1, self.assists, self.name) < (
+            other.kills,
+            other.deaths * -1,
+            other.assists,
+            other.name,
         )
 
     @staticmethod
-    def from_string(data: str) -> 'Player':
+    def from_string(data: str) -> "Player":
         if m := re.match(Player.RE_PLAYER, data.strip()):
-            name = re.sub(Player.RE_COLOR, '', m['name'])
+            name = re.sub(Player.RE_COLOR, "", m["name"])
             score = PlayerScore._make(int(m[x]) for x in PlayerScore._fields)
-            ping = -1 if m['ping'] in ('CNCT', 'ZMBI') else int(m['ping'])
+            ping = -1 if m["ping"] in ("CNCT", "ZMBI") else int(m["ping"])
             return Player(
                 name=name,
-                team=m['team'],
+                team=m["team"],
                 score=score,
                 ping=ping,
-                auth=m['auth'],
-                ip_address=m['ip_address'],
+                auth=m["auth"],
+                ip_address=m["ip_address"],
             )
-        raise ValueError(f'Invalid data: {data}')
+        raise ValueError(f"Invalid data: {data}")
 
     def __repr__(self) -> str:
         return (
-            'Player('
-            f'name={self.name}, team={self.team}, score={self.score}, '
-            f'ping={self.ping}, auth={self.auth}, ip_address={self.ip_address}'
-            ')'
+            "Player("
+            f"name={self.name}, team={self.team}, score={self.score}, "
+            f"ping={self.ping}, auth={self.auth}, ip_address={self.ip_address}"
+            ")"
         )
 
 
 class Server:
-    RE_SCORES = re.compile(r'\s*R:(?P<red>\d+)\s+B:(?P<blue>\d+)')
+    RE_SCORES = re.compile(r"\s*R:(?P<red>\d+)\s+B:(?P<blue>\d+)")
 
     def __init__(self) -> None:
         self.settings: dict[str, str] = {}
@@ -100,34 +105,34 @@ class Server:
 
     @property
     def map_name(self) -> str:
-        return self.settings.get('Map', 'Unknown')
+        return self.settings.get("Map", "Unknown")
 
     @property
     def player_count(self) -> int:
-        return int(self.settings.get('Players', 0))
+        return int(self.settings.get("Players", 0))
 
     @property
     def game_type(self) -> str:
-        if game_type := self.settings.get('GameType'):
-            if game_type == 'FFA':
-                game_type = 'Gun Game/FFA'
+        if game_type := self.settings.get("GameType"):
+            if game_type == "FFA":
+                game_type = "Gun Game/FFA"
             return game_type
-        return 'Unknown'
+        return "Unknown"
 
     @property
     def scores(self) -> str | None:
-        return self.settings.get('Scores')
+        return self.settings.get("Scores")
 
     @property
     def game_time(self) -> str:
-        return self.settings['GameTime']
+        return self.settings["GameTime"]
 
     @property
     def score_red(self) -> str | None:
         if not self.scores:
             return None
         if m := re.match(self.RE_SCORES, self.scores):
-            return m['red']
+            return m["red"]
         return None
 
     @property
@@ -135,7 +140,7 @@ class Server:
         if not self.scores:
             return None
         if m := re.match(self.RE_SCORES, self.scores):
-            return m['blue']
+            return m["blue"]
         return None
 
     def _get_team(self, team_name: str) -> list[Player]:
@@ -143,56 +148,56 @@ class Server:
 
     @property
     def spectators(self) -> list[Player]:
-        return self._get_team('SPECTATOR')
+        return self._get_team("SPECTATOR")
 
     @property
     def team_free(self) -> list[Player]:
-        return self._get_team('FREE')
+        return self._get_team("FREE")
 
     @property
     def team_red(self) -> list[Player]:
-        return self._get_team('RED')
+        return self._get_team("RED")
 
     @property
     def team_blue(self) -> list[Player]:
-        return self._get_team('BLUE')
+        return self._get_team("BLUE")
 
     @staticmethod
-    def from_string(data: str) -> 'Server':
+    def from_string(data: str) -> "Server":
         server = Server()
         in_header = True
         for line in data.splitlines():
-            k, v = line.split(':', maxsplit=1)
+            k, v = line.split(":", maxsplit=1)
             if in_header:
                 server.settings[k] = v.strip()
-                if k == 'GameTime':
+                if k == "GameTime":
                     in_header = False
             elif k.isnumeric():
                 player = Player.from_string(line)
                 server.players.append(player)
-            elif k == 'Map':
+            elif k == "Map":
                 # back-to-back messages, start over
                 server.settings[k] = v.strip()
                 in_header = True
 
         if server.player_count != len(server.players):
             raise RuntimeError(
-                f'Player count {server.player_count} does not match '
-                f'players {len(server.players)}'
-                f'\n\n{data}'
+                f"Player count {server.player_count} does not match "
+                f"players {len(server.players)}"
+                f"\n\n{data}"
             )
 
         if not server.map_name:
-            raise RuntimeError(f'Map name not set.\n\n{data}')
+            raise RuntimeError(f"Map name not set.\n\n{data}")
 
         server.players.sort(reverse=True)
         return server
 
     def __str__(self) -> str:
         return (
-            'Server('
-            f'map_name={self.map_name}, '
-            f'game_type={self.game_type}, '
-            f'players={self.player_count}'
-            ')'
+            "Server("
+            f"map_name={self.map_name}, "
+            f"game_type={self.game_type}, "
+            f"players={self.player_count}"
+            ")"
         )

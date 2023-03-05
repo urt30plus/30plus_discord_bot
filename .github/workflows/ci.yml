@@ -29,6 +29,10 @@ jobs:
         run: |
           ruff --version
           ruff check .
+      - name: Run black
+        run: |
+          black --version
+          black --check .
       - name: Run tests
         env:
           BOT_USER: 30+Bot#TEST
