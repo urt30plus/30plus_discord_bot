@@ -2,5 +2,6 @@
 
 black
 mypy
+pre-commit
 ruff
 types-aiofiles
