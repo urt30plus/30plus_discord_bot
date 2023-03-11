@@ -1,6 +1,7 @@
 import asyncio
 import logging
-from typing import Self
+from types import TracebackType
+from typing import Any, Self
 
 import asyncio_dgram
 import discord
@@ -15,16 +16,15 @@ class Bot30ClientError(Exception):
 
 
 class Bot30Client(discord.Client):
-    def __init__(  # type: ignore[no-untyped-def]
+    def __init__(
         self,
         bot_user: str,
         server_name: str,
-        *args,
-        **kwargs,
+        **kwargs: Any,
     ) -> None:
         if "intents" not in kwargs:
             kwargs["intents"] = discord.Intents.all()
-        super().__init__(*args, **kwargs)
+        super().__init__(**kwargs)
         self.bot_user = bot_user
         self.server_name = server_name
         self._guild: discord.Guild | None = None
@@ -46,7 +46,9 @@ class Bot30Client(discord.Client):
         for ch in channels:
             if ch.name == name:
                 logger.info("Found channel: %s [%s]", ch.name, ch.id)
-                return ch  # type:ignore
+                if isinstance(ch, discord.TextChannel):
+                    return ch
+                raise Bot30ClientError(f"Channel {name} invalid type: {type(ch)}")
 
         raise Bot30ClientError(f"Channel {name} not found")
 
@@ -89,14 +91,14 @@ class Bot30Client(discord.Client):
         channel_name: str,
         embed_title: str,
         limit: int = 5,
-    ) -> tuple[discord.TextChannel, discord.Message]:
+    ) -> tuple[discord.TextChannel, discord.Message | None]:
         channel = await self._channel_by_name(channel_name)
         message = await self._find_message_by_embed_title(
             channel=channel,
             embed_title=embed_title,
             limit=limit,
         )
-        return channel, message  # type:ignore
+        return channel, message
 
     def __str__(self) -> str:
         return (
@@ -179,10 +181,10 @@ class RCONClient:
         await self.connect()
         return self
 
-    async def __aexit__(  # type: ignore[no-untyped-def]
+    async def __aexit__(
         self,
-        exc_type,
-        exc_val,
-        exc_tb,
-    ):
+        exc_type: type[BaseException] | None,
+        exc_val: BaseException,
+        exc_tb: TracebackType,
+    ) -> None:
         await self.close()

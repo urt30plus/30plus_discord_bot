@@ -162,7 +162,6 @@ async def update_current_map(client: Bot30Client) -> None:
         client.fetch_embed_message(channel_name, embed_title),
         server_info(),
     )
-    message: discord.Message
     channel, message = channel_message
     embed = create_server_embed(server)
     if message:
