@@ -119,13 +119,37 @@ def should_update_embed(message: discord.Message, embed: discord.Embed) -> bool:
     return new_txt.rsplit("\n", maxsplit=1)[0] != curr_txt.rsplit("\n", maxsplit=1)[0]
 
 
-async def update_message_embed_periodically(message: discord.Message) -> None:
+def same_map_and_specs(s1: Server | None, s2: Server | None) -> bool:
+    """
+    Used to determine if both server instances reference the same map and
+    have the same spectators with no current players. In case we can skip
+    updating the embedded message.
+    """
+    return (
+        s1 is not None
+        and s2 is not None
+        and s1.map_name == s2.map_name
+        and s1.player_count == s2.player_count
+        and len(s1.spectators) == s1.player_count
+        and len(s2.spectators) == s2.player_count
+        and sorted(s1.spectators) == sorted(s2.spectators)
+    )
+
+
+async def update_message_embed_periodically(
+    message: discord.Message,
+    server: Server | None,
+) -> None:
     delay = bot30.CURRENT_MAP_UPDATE_DELAY
     stop_at = START_TICK + (bot30.BOT_MAX_RUN_TIME - delay - 1.5)
     while time.monotonic() < stop_at:
         await asyncio.sleep(delay)
+        prev_server = server
         server = await server_info()
+        if same_map_and_specs(prev_server, server):
+            break
         embed = create_server_embed(server)
+        logger.debug("Updating message: %s", message.id)
         await message.edit(embed=embed)
         if not embed.fields:
             break
@@ -146,7 +170,7 @@ async def update_current_map(client: Bot30Client) -> None:
         if should_update_embed(message, embed):
             logger.info("Updating existing message: %s", message.id)
             await message.edit(embed=embed)
-            await update_message_embed_periodically(message)
+            await update_message_embed_periodically(message, server)
         else:
             logger.info("Existing message embed is up to date")
     else:
@@ -158,7 +182,7 @@ async def update_current_map(client: Bot30Client) -> None:
             bot30.CHANNEL_NAME_MAPCYCLE, bot30.CURRENT_MAP_EMBED_TITLE
         )
         if message:
-            await update_message_embed_periodically(message)
+            await update_message_embed_periodically(message, server)
 
 
 async def async_main() -> None:
