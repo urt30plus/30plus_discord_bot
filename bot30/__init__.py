@@ -7,6 +7,8 @@ import dotenv
 dotenv.load_dotenv()
 
 LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO")
+LOG_LEVEL_ASYNC_DGRAM = os.getenv("LOG_LEVEL_ASYNC_DGRAM", "ERROR")
+LOG_LEVEL_DISCORD = os.getenv("LOG_LEVEL_DISCORD", "ERROR")
 
 BOT_USER = os.environ["BOT_USER"]
 BOT_SERVER_NAME = os.environ["BOT_SERVER_NAME"]
@@ -32,4 +34,5 @@ logging.basicConfig(
     stream=sys.stdout,
 )
 logging.getLogger("bot30").setLevel(LOG_LEVEL)
-logging.getLogger("discord").setLevel(logging.ERROR)
+logging.getLogger("asyncio_dgram").setLevel(LOG_LEVEL_ASYNC_DGRAM)
+logging.getLogger("discord").setLevel(LOG_LEVEL_DISCORD)
