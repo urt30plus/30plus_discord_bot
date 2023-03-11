@@ -160,6 +160,13 @@ async def update_current_map(client: Bot30Client) -> None:
     else:
         logger.info("Sending new message")
         await channel.send(embed=embed)
+        # in case players are connected when we create the message, keep
+        # updating it if needed
+        _, message = await client.fetch_embed_message(
+            bot30.CHANNEL_NAME_MAPCYCLE, bot30.CURRENT_MAP_EMBED_TITLE
+        )
+        if message:
+            await update_message_embed_periodically(message)
 
 
 async def async_main() -> None:
