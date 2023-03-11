@@ -2,7 +2,6 @@ import asyncio
 import logging
 import time
 
-# noinspection PyPackageRequirements
 import discord
 
 import bot30

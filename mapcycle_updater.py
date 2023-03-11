@@ -3,8 +3,6 @@ import logging
 import time
 
 import aiofiles
-
-# noinspection PyPackageRequirements
 import discord
 
 import bot30

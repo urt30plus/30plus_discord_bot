@@ -3,8 +3,6 @@ import logging
 from typing import Self
 
 import asyncio_dgram
-
-# noinspection PyPackageRequirements
 import discord
 
 from bot30.models import Server
