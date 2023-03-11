@@ -90,7 +90,7 @@ def create_server_embed(server: Server | None) -> discord.Embed:
     return embed
 
 
-async def get_server_info() -> Server:
+async def server_info() -> Server | None:
     if not (rcon_pass := bot30.GAME_SERVER_RCON_PASS):
         raise RuntimeError("RCON password is not set")
     async with RCONClient(
@@ -98,16 +98,11 @@ async def get_server_info() -> Server:
         port=bot30.GAME_SERVER_PORT,
         rcon_pass=rcon_pass,
     ) as c:
-        return await c.server_info()
-
-
-async def create_embed() -> discord.Embed:
-    try:
-        server = await get_server_info()
-    except Exception:
-        logger.exception("Failed to get server info")
-        server = None
-    return create_server_embed(server)
+        try:
+            return await c.server_info()
+        except Exception:
+            logger.exception("Failed to get server info")
+            return None
 
 
 def should_update_embed(message: discord.Message, embed: discord.Embed) -> bool:
@@ -129,7 +124,8 @@ async def update_message_embed_periodically(message: discord.Message) -> None:
     stop_at = START_TICK + (bot30.BOT_MAX_RUN_TIME - delay - 1.5)
     while time.monotonic() < stop_at:
         await asyncio.sleep(delay)
-        embed = await create_embed()
+        server = await server_info()
+        embed = create_server_embed(server)
         await message.edit(embed=embed)
         if not embed.fields:
             break
@@ -137,15 +133,15 @@ async def update_message_embed_periodically(message: discord.Message) -> None:
 
 async def update_current_map(client: Bot30Client) -> None:
     await client.login(bot30.BOT_TOKEN)
-    embed: discord.Embed
-    channel_message, embed = await asyncio.gather(
-        client.fetch_embed_message(
-            bot30.CHANNEL_NAME_MAPCYCLE, bot30.CURRENT_MAP_EMBED_TITLE
-        ),
-        create_embed(),
+    channel_name = bot30.CHANNEL_NAME_MAPCYCLE
+    embed_title = bot30.CURRENT_MAP_EMBED_TITLE
+    channel_message, server = await asyncio.gather(
+        client.fetch_embed_message(channel_name, embed_title),
+        server_info(),
     )
     message: discord.Message
     channel, message = channel_message
+    embed = create_server_embed(server)
     if message:
         if should_update_embed(message, embed):
             logger.info("Updating existing message: %s", message.id)
