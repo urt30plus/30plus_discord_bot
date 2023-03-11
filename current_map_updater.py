@@ -16,19 +16,15 @@ START_TICK = time.monotonic()
 EMBED_NO_PLAYERS = "```\n" + "." * (17 + 12) + "\n```"
 
 
+def format_player(p: Player) -> str:
+    return f"{p.name[:17]:17} [{p.kills:3}/{p.deaths:2}/{p.assists:2}]"
+
+
 def player_score_display(players: list[Player]) -> str | None:
     if not players:
         return None
-    return (
-        "```\n"
-        + "\n".join(
-            [
-                f"{p.name[:17]:17} [{p.kills:3}/{p.deaths:2}/{p.assists:2}]"
-                for p in players
-            ]
-        )
-        + "\n```"
-    )
+
+    return "```\n" + "\n".join([format_player(p) for p in players]) + "\n```"
 
 
 def add_player_fields(embed: discord.Embed, server: Server) -> None:
