@@ -25,8 +25,8 @@ GAME_SERVER_IP = os.getenv("GAME_SERVER_IP", "127.0.0.1")
 GAME_SERVER_PORT = int(os.getenv("GAME_SERVER_PORT", "27960"))
 GAME_SERVER_RCON_PASS = os.getenv("GAME_SERVER_RCON_PASS")
 
-# Delay in fractional seconds between updates when there are players online
 CURRENT_MAP_EMBED_TITLE = os.environ["CURRENT_MAP_EMBED_TITLE"]
+# Delay in fractional seconds between updates when there are players online
 CURRENT_MAP_UPDATE_DELAY = float(os.getenv("CURRENT_MAP_UPDATE_DELAY", "5.0"))
 
 logging.basicConfig(
