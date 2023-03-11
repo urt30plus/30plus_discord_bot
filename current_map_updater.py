@@ -23,7 +23,7 @@ def player_score_display(players: list[Player]) -> str | None:
         "```\n"
         + "\n".join(
             [
-                f"{p.name[:17]:17} " f"[{p.kills:3}/{p.deaths:2}/{p.assists:2}]"
+                f"{p.name[:17]:17} [{p.kills:3}/{p.deaths:2}/{p.assists:2}]"
                 for p in players
             ]
         )
@@ -110,18 +110,19 @@ async def get_server_info() -> Server:
 async def create_embed() -> discord.Embed:
     try:
         server = await get_server_info()
-    except Exception as exc:
-        logger.exception("Failed to get server info: %r", exc)
+    except Exception:
+        logger.exception("Failed to get server info")
         server = None
     return create_server_embed(server)
 
 
 def should_update_embed(message: discord.Message, embed: discord.Embed) -> bool:
     current_embed = message.embeds[0]
-    if current_embed.fields or embed.fields:
-        # ignore our last updated field
-        if len(current_embed.fields) > 1 or len(embed.fields) > 1:
-            return True
+    if (current_embed.fields or embed.fields) and (
+        len(current_embed.fields) > 1 or len(embed.fields) > 1
+    ):
+        # check fields len to ignore our last updated field
+        return True
     curr_txt = current_embed.description if current_embed.description else ""
     new_txt = embed.description if embed.description else ""
     return curr_txt.strip() != new_txt.strip()
@@ -171,8 +172,8 @@ async def async_main() -> None:
             update_current_map(client),
             timeout=bot30.BOT_MAX_RUN_TIME,
         )
-    except Exception as exc:
-        logger.exception(exc)
+    except Exception:
+        logger.exception("Failed to update current map")
         raise
     finally:
         await asyncio.wait_for(client.close(), timeout=5)

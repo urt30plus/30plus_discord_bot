@@ -141,9 +141,9 @@ class RCONClient:
             data = await self._receive(timeout=timeout)
             if data:
                 return data.decode(self.ENCODING)
-            else:
-                logger.warning("RCON %s: no data on try %s", cmd, i)
-                await asyncio.sleep(timeout * i + 1)
+
+            logger.warning("RCON %s: no data on try %s", cmd, i)
+            await asyncio.sleep(timeout * i + 1)
 
         raise RCONClientError(f"No data returned: RCON {cmd}")
 

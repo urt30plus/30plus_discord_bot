@@ -114,9 +114,7 @@ class Server:
     @property
     def game_type(self) -> str:
         if game_type := self.settings.get("GameType"):
-            if game_type == "FFA":
-                game_type = "Gun Game/FFA"
-            return game_type
+            return "Gun Game/FFA" if game_type == "FFA" else game_type
         return "Unknown"
 
     @property

@@ -38,7 +38,7 @@ def parse_mapcycle_lines(lines: list[str]) -> MapCycle:
         line = raw_line.strip()
         if not line or line.startswith("//"):
             continue
-        elif line == "{":
+        if line == "{":
             map_config = result[map_name]
         elif line == "}":
             map_config = None
@@ -86,8 +86,8 @@ async def create_embed() -> discord.Embed:
     logger.info("Creating map cycle embed from: %s", bot30.MAPCYCLE_FILE)
     try:
         cycle = await parse_mapcycle(bot30.MAPCYCLE_FILE)
-    except Exception as exc:
-        logger.exception("Failed to parse mapcycle file: %r", exc)
+    except Exception:
+        logger.exception("Failed to parse map cycle file: %s", bot30.MAPCYCLE_FILE)
         cycle = {}
     return create_mapcycle_embed(cycle)
 
@@ -126,8 +126,8 @@ async def async_main() -> None:
     logger.info("%s", client)
     try:
         await asyncio.wait_for(update_mapcycle(client), timeout=30)
-    except Exception as exc:
-        logger.exception(exc)
+    except Exception:
+        logger.exception("Failed to update map cycle")
         raise
     finally:
         await asyncio.wait_for(client.close(), timeout=10)
