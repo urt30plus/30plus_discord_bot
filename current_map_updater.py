@@ -65,7 +65,7 @@ def add_mapinfo_field(embed: discord.Embed, server: Server) -> None:
 
 def create_server_embed(server: Server | None) -> discord.Embed:
     embed = discord.Embed(title=bot30.CURRENT_MAP_EMBED_TITLE)
-
+    last_updated = f"updated <t:{int(time.time())}:R>"
     if server:
         if game_type := server.game_type:
             description = f"{server.map_name} ({game_type})"
@@ -76,18 +76,16 @@ def create_server_embed(server: Server | None) -> discord.Embed:
             embed.colour = discord.Colour.green()
             add_mapinfo_field(embed, server)
             add_player_fields(embed, server)
+            embed.add_field(name=last_updated, value="", inline=False)
         else:
-            embed.description += "\n*No players online*"
             embed.colour = discord.Colour.light_grey()
+            # do not add a field to make updating based on description only
+            embed.description += f"\n*No players online*\n\n{last_updated}"
     else:
         embed.colour = discord.Colour.red()
         embed.description = "*Unable to retrieve server information*"
-
-    embed.add_field(
-        name=f"Last updated <t:{int(time.time())}:R>",
-        value="",
-        inline=False,
-    )
+        # add last updated as a field to trigger updating
+        embed.add_field(name=last_updated, value="", inline=False)
 
     return embed
 
@@ -114,14 +112,16 @@ async def create_embed() -> discord.Embed:
 
 def should_update_embed(message: discord.Message, embed: discord.Embed) -> bool:
     current_embed = message.embeds[0]
-    if (current_embed.fields or embed.fields) and (
-        len(current_embed.fields) > 1 or len(embed.fields) > 1
-    ):
-        # check fields len to ignore our last updated field
+    # embed fields indicate that either players are connected or there was an
+    # error getting server info, in either case we want to continue updating
+    if current_embed.fields or embed.fields:
         return True
     curr_txt = current_embed.description if current_embed.description else ""
     new_txt = embed.description if embed.description else ""
-    return curr_txt.strip() != new_txt.strip()
+    # ignore the last line that has the updated timestamp embedded, at this
+    # point the messages are `no players online` and we only want to update
+    # if the map has changed
+    return new_txt.rsplit("\n", maxsplit=1)[0] != curr_txt.rsplit("\n", maxsplit=1)[0]
 
 
 async def update_message_embed_periodically(message: discord.Message) -> None:
