@@ -82,7 +82,7 @@ def create_server_embed(server: Server | None) -> discord.Embed:
             add_player_fields(embed, server)
         else:
             embed.description += "\n*No players online*"
-            embed.colour = discord.Colour.light_gray()  # type: ignore[call-arg,misc]
+            embed.colour = discord.Coluor.light_grey()
     else:
         embed.colour = discord.Colour.red()
         embed.description = "*Unable to retrieve server information*"
