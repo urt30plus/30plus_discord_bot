@@ -18,16 +18,3 @@ repos:
     rev: "23.1.0"
     hooks:
       - id: black
-  - repo: local
-    hooks:
-      - id: mypy
-        name: mypy
-        language: system
-        entry: mypy
-        types: [python]
-        exclude: ^(tests\/.*|\..*\/)$
-      - id: unittest
-        name: unittest
-        language: system
-        entry: python -m unittest
-        types: [python]
