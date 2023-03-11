@@ -2,7 +2,7 @@ import dataclasses
 import enum
 import functools
 import re
-from typing import Any, NamedTuple
+from typing import Any, NamedTuple, Self
 
 
 class PlayerScore(NamedTuple):
@@ -71,13 +71,13 @@ class Player:
             other.name,
         )
 
-    @staticmethod
-    def from_string(data: str) -> "Player":
+    @classmethod
+    def from_string(cls, data: str) -> Self:
         if m := re.match(Player.RE_PLAYER, data.strip()):
             name = re.sub(Player.RE_COLOR, "", m["name"])
             score = PlayerScore._make(int(m[x]) for x in PlayerScore._fields)
             ping = -1 if m["ping"] in ("CNCT", "ZMBI") else int(m["ping"])
-            return Player(
+            return cls(
                 name=name,
                 team=m["team"],
                 score=score,
@@ -160,9 +160,9 @@ class Server:
     def team_blue(self) -> list[Player]:
         return self._get_team("BLUE")
 
-    @staticmethod
-    def from_string(data: str) -> "Server":
-        server = Server()
+    @classmethod
+    def from_string(cls, data: str) -> Self:
+        server = cls()
         in_header = True
         for line in data.splitlines():
             k, v = line.split(":", maxsplit=1)
