@@ -1,3 +1,4 @@
+#!/usr/bin/env bash
 set -xe
 
 echo "CI is set to [${CI}]"
