@@ -60,7 +60,7 @@ def create_mapcycle_embed(cycle: MapCycle) -> discord.Embed:
         descr = (
             "```\n"
             + "\n".join([f"{k:25} {map_mode(v)}" for k, v in cycle.items()])
-            + "\n```"
+            + "```"
         )
         color = discord.Colour.blue()
     else:
@@ -72,8 +72,8 @@ def create_mapcycle_embed(cycle: MapCycle) -> discord.Embed:
         colour=color,
     )
     embed.add_field(
-        name=f"{len(cycle)} maps last updated <t:{int(time.time())}>",
-        value="",
+        name=f"{len(cycle)} maps",
+        value=f"updated <t:{int(time.time())}>",
         inline=False,
     )
 
