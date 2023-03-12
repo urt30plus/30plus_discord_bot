@@ -70,7 +70,7 @@ def create_server_embed(server: Server | None) -> discord.Embed:
     embed = discord.Embed(title=bot30.CURRENT_MAP_EMBED_TITLE)
 
     last_updated = f"updated <t:{int(time.time())}:R>"
-    connect_info = f"`/connect {bot30.GAME_SERVER_IP}:{bot30.GAME_SERVER_PORT}`"
+    connect_info = f"`/connect game.urt-30plus.org:{bot30.GAME_SERVER_PORT}`"
 
     if server:
         if game_type := server.game_type:
