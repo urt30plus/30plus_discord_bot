@@ -12,11 +12,15 @@ logger = logging.getLogger("bot30.current_map")
 
 START_TICK = time.monotonic()
 
-EMBED_NO_PLAYERS = "```\n" + "." * (17 + 12) + "\n```"
+# Max embed field length is roughly 48. We use 18 to display the
+# ` [K../D./A.] 123ms` scores, and we want to leave a few chars
+# for it to fit comfortably
+EMBED_NO_PLAYERS = "```\n" + "." * (24 + 18) + "\n```"
 
 
 def format_player(p: Player) -> str:
-    return f"{p.name[:17]:17} [{p.kills:3}/{p.deaths:2}/{p.assists:2}]"
+    ping = f"{p.ping:3}ms" if p.ping > 0 else ""
+    return f"{p.name[:24]:24} [{p.kills:3}/{p.deaths:2}/{p.assists:2}] {ping}"
 
 
 def player_score_display(players: list[Player]) -> str | None:
@@ -33,12 +37,12 @@ def add_player_fields(embed: discord.Embed, server: Server) -> None:
         embed.add_field(
             name=f"Red ({server.score_red})",
             value=team_r or EMBED_NO_PLAYERS,
-            inline=True,
+            inline=False,
         )
         embed.add_field(
             name=f"Blue ({server.score_blue})",
             value=team_b or EMBED_NO_PLAYERS,
-            inline=True,
+            inline=False,
         )
     elif team_free := player_score_display(server.team_free):
         embed.add_field(name="Players", value=team_free, inline=False)
@@ -73,7 +77,7 @@ def create_server_embed(server: Server | None) -> discord.Embed:
             description = f"{server.map_name} ({game_type})"
         else:
             description = server.map_name
-        embed.description = f"```\n{description:60}\n```"
+        embed.description = f"```\n{description}\n```"
         if server.players:
             embed.colour = discord.Colour.green()
             add_mapinfo_field(embed, server)
