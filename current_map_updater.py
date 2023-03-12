@@ -64,7 +64,10 @@ def add_mapinfo_field(embed: discord.Embed, server: Server) -> None:
 
 def create_server_embed(server: Server | None) -> discord.Embed:
     embed = discord.Embed(title=bot30.CURRENT_MAP_EMBED_TITLE)
+
     last_updated = f"updated <t:{int(time.time())}:R>"
+    connect_info = f"`/connect {bot30.GAME_SERVER_IP}:{bot30.GAME_SERVER_PORT}`"
+
     if server:
         if game_type := server.game_type:
             description = f"{server.map_name} ({game_type})"
@@ -75,16 +78,17 @@ def create_server_embed(server: Server | None) -> discord.Embed:
             embed.colour = discord.Colour.green()
             add_mapinfo_field(embed, server)
             add_player_fields(embed, server)
-            embed.add_field(name=last_updated, value="", inline=False)
+            embed.add_field(name=connect_info, value=last_updated, inline=False)
         else:
             embed.colour = discord.Colour.light_grey()
             # do not add a field to make updating based on description only
-            embed.description += f"\n*No players online*\n\n{last_updated}"
+            embed.description += "\n*No players online*\n"
+            embed.description += f"\n{connect_info}\n{last_updated}"
     else:
         embed.colour = discord.Colour.red()
         embed.description = "*Unable to retrieve server information*"
         # add last updated as a field to trigger updating
-        embed.add_field(name=last_updated, value="", inline=False)
+        embed.add_field(name=connect_info, value=last_updated, inline=False)
 
     return embed
 
