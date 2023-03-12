@@ -43,8 +43,8 @@ def add_player_fields(embed: discord.Embed, server: Server) -> None:
     elif team_free := player_score_display(server.team_free):
         embed.add_field(name="Players", value=team_free, inline=False)
 
-    if team_spec := [f"{p.name}" for p in server.spectators]:
-        specs = "```\n" + "\n".join(team_spec) + "\n```"
+    if server.spectators:
+        specs = "```\n" + "\n".join(p.name for p in server.spectators) + "\n```"
         embed.add_field(name="Spectators", value=specs, inline=False)
 
 
