@@ -38,4 +38,3 @@ extend-select = [
     "W",  # pycodestyle (warnings)
     "YTT",  # flake8-2020
 ]
-ignore = ["TRY003"]

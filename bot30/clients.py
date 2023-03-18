@@ -36,21 +36,21 @@ class Bot30Client(discord.Client):
                 self._guild = guild
                 break
         else:
-            raise Bot30ClientError(f"Server {self.server_name} not found")
+            raise Bot30ClientError("SERVER_NOT_FOUND", self.server_name)
 
     async def _channel_by_name(self, name: str) -> discord.TextChannel:
         logger.info("Looking for channel named [%s]", name)
         if self._guild is None:
-            raise RuntimeError("Guild has not been set")
+            raise RuntimeError("GUILD_NOT_SET")
         channels = await self._guild.fetch_channels()
         for ch in channels:
             if ch.name == name:
                 logger.info("Found channel: %s [%s]", ch.name, ch.id)
                 if isinstance(ch, discord.TextChannel):
                     return ch
-                raise Bot30ClientError(f"Channel {name} invalid type: {type(ch)}")
+                raise Bot30ClientError("INVALID_CHANNEL_TYPE", name, type(ch))
 
-        raise Bot30ClientError(f"Channel {name} not found")
+        raise Bot30ClientError("CHANNEL_NOT_FOUND", name)
 
     async def _last_messages(
         self,
@@ -127,14 +127,17 @@ class RCONClient:
         if self.stream is None:
             self.stream = await asyncio_dgram.connect((self.host, self.port))
 
+    def _check_stream(self) -> None:
+        if self.stream is None:
+            raise RuntimeError("STEAM_NOT_CONNECTED")
+
     def _create_rcon_cmd(self, cmd: str) -> bytes:
         return self.CMD_PREFIX + f'rcon "{self.rcon_pass}" {cmd}\n'.encode(
             self.ENCODING
         )
 
     async def _send_rcon(self, cmd: str, timeout: float, retries: int) -> str:
-        if self.stream is None:
-            raise RuntimeError("Steam has not been set, must connect first")
+        self._check_stream()
         rcon_cmd = self._create_rcon_cmd(cmd)
         for i in range(1, retries + 1):
             await self.stream.send(rcon_cmd)
@@ -145,11 +148,10 @@ class RCONClient:
             logger.warning("RCON %s: no data on try %s", cmd, i)
             await asyncio.sleep(timeout * i + 1)
 
-        raise RCONClientError(f"No data returned: RCON {cmd}")
+        raise RCONClientError("NO_DATA", cmd)
 
     async def _receive(self, timeout: float = 0.5) -> bytearray:
-        if self.stream is None:
-            raise RuntimeError("Steam has not been set, must connect first")
+        self._check_stream()
         result = bytearray()
         while True:
             try:

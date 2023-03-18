@@ -99,7 +99,7 @@ def create_server_embed(server: Server | None) -> discord.Embed:
 
 async def server_info() -> Server | None:
     if not (rcon_pass := bot30.GAME_SERVER_RCON_PASS):
-        raise RuntimeError("RCON password is not set")
+        raise RuntimeError("GAME_SERVER_RCON_PASS")
     async with RCONClient(
         host=bot30.GAME_SERVER_IP,
         port=bot30.GAME_SERVER_PORT,

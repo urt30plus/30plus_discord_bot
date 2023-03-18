@@ -85,7 +85,7 @@ class Player:
                 auth=m["auth"],
                 ip_address=m["ip_address"],
             )
-        raise ValueError(f"Invalid data: {data}")
+        raise ValueError(data)
 
     def __repr__(self) -> str:
         return (
@@ -179,14 +179,15 @@ class Server:
                 in_header = True
 
         if server.player_count != len(server.players):
-            raise RuntimeError(
+            msg = (
                 f"Player count {server.player_count} does not match "
                 f"players {len(server.players)}"
                 f"\n\n{data}"
             )
+            raise RuntimeError(msg)
 
         if not server.map_name:
-            raise RuntimeError(f"Map name not set.\n\n{data}")
+            raise RuntimeError("MAP_NOT_SET", data)
 
         server.players.sort(reverse=True)
         return server
