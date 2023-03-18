@@ -15,7 +15,7 @@ START_TICK = time.monotonic()
 # Max embed field length is roughly 48. We use 18 to display the
 # ` [K../D./A.] 123ms` scores, and we want to leave a few chars
 # for it to fit comfortably
-EMBED_NO_PLAYERS = "```\n" + "." * (24 + 18) + "\n```"
+EMBED_NO_PLAYERS = "```\n" + " " * (24 + 18) + "\n```"
 
 
 def format_player(p: Player) -> str:
