@@ -127,17 +127,14 @@ class RCONClient:
         if self.stream is None:
             self.stream = await asyncio_dgram.connect((self.host, self.port))
 
-    def _check_stream(self) -> None:
-        if self.stream is None:
-            raise RuntimeError("STEAM_NOT_CONNECTED")
-
     def _create_rcon_cmd(self, cmd: str) -> bytes:
         return self.CMD_PREFIX + f'rcon "{self.rcon_pass}" {cmd}\n'.encode(
             self.ENCODING
         )
 
     async def _send_rcon(self, cmd: str, timeout: float, retries: int) -> str:
-        self._check_stream()
+        if self.stream is None:
+            raise RuntimeError("STEAM_NOT_CONNECTED")
         rcon_cmd = self._create_rcon_cmd(cmd)
         for i in range(1, retries + 1):
             await self.stream.send(rcon_cmd)
@@ -151,7 +148,8 @@ class RCONClient:
         raise RCONClientError("NO_DATA", cmd)
 
     async def _receive(self, timeout: float = 0.5) -> bytearray:
-        self._check_stream()
+        if self.stream is None:
+            raise RuntimeError("STEAM_NOT_CONNECTED")
         result = bytearray()
         while True:
             try:
