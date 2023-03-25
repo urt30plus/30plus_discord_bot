@@ -9,9 +9,8 @@ warn_unreachable = true
 
 [tool.ruff]
 target-version = "py311"
-line-length = 88
 extend-exclude = [".*"]
-extend-select = [
+select = [
     "A",  # shadowing builtins
     "ARG",  # unused arguments
     "B",  # bugbear

@@ -6,7 +6,7 @@ from typing import Any, Self
 import asyncio_dgram
 import discord
 
-from bot30.models import Server
+from .models import Server
 
 logger = logging.getLogger(__name__)
 
