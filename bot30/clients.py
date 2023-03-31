@@ -15,6 +15,23 @@ class Bot30ClientError(Exception):
     pass
 
 
+class ServerNotFoundError(Bot30ClientError):
+    pass
+
+
+class ChannelNotFoundError(Bot30ClientError):
+    pass
+
+
+class InvalidChannelTypeError(Bot30ClientError):
+    def __init__(self, channel: discord.abc.GuildChannel) -> None:
+        super().__init__(channel.name, channel.type)
+
+
+class GuildNotFoundError(Bot30ClientError):
+    pass
+
+
 class Bot30Client(discord.Client):
     def __init__(
         self,
@@ -36,21 +53,21 @@ class Bot30Client(discord.Client):
                 self._guild = guild
                 break
         else:
-            raise Bot30ClientError("SERVER_NOT_FOUND", self.server_name)
+            raise ServerNotFoundError(self.server_name)
 
     async def _channel_by_name(self, name: str) -> discord.TextChannel:
         logger.info("Looking for channel named [%s]", name)
         if self._guild is None:
-            raise RuntimeError("GUILD_NOT_SET")
+            raise GuildNotFoundError(name)
         channels = await self._guild.fetch_channels()
         for ch in channels:
             if ch.name == name:
                 logger.info("Found channel: %s [%s]", ch.name, ch.id)
                 if isinstance(ch, discord.TextChannel):
                     return ch
-                raise Bot30ClientError("INVALID_CHANNEL_TYPE", name, type(ch))
+                raise InvalidChannelTypeError(ch)
 
-        raise Bot30ClientError("CHANNEL_NOT_FOUND", name)
+        raise ChannelNotFoundError(name)
 
     async def _last_messages(
         self,
@@ -108,6 +125,10 @@ class RCONClientError(Exception):
     pass
 
 
+class RCONStreamNotConnectedError(RCONClientError):
+    pass
+
+
 class RCONClient:
     CMD_PREFIX = b"\xff" * 4
     REPLY_PREFIX = CMD_PREFIX + b"print\n"
@@ -130,7 +151,7 @@ class RCONClient:
 
     async def _send_rcon(self, cmd: str, timeout: float, retries: int) -> str:
         if self.stream is None:
-            raise RuntimeError("STEAM_NOT_CONNECTED")
+            raise RCONStreamNotConnectedError
         rcon_cmd = self._create_rcon_cmd(cmd)
         for i in range(1, retries + 1):
             await self.stream.send(rcon_cmd)
@@ -145,7 +166,7 @@ class RCONClient:
 
     async def _receive(self, timeout: float = 0.5) -> bytearray:
         if self.stream is None:
-            raise RuntimeError("STEAM_NOT_CONNECTED")
+            raise RCONStreamNotConnectedError
         result = bytearray()
         while True:
             try:
