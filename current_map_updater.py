@@ -4,7 +4,7 @@ import time
 
 import discord
 
-import bot30
+from bot30 import __version__, settings
 from bot30.clients import Bot30Client, RCONClient
 from bot30.models import Player, Server
 
@@ -67,10 +67,10 @@ def add_mapinfo_field(embed: discord.Embed, server: Server) -> None:
 
 
 def create_server_embed(server: Server | None) -> discord.Embed:
-    embed = discord.Embed(title=bot30.CURRENT_MAP_EMBED_TITLE)
+    embed = discord.Embed(title=settings.CURRENT_MAP_EMBED_TITLE)
 
     last_updated = f"updated <t:{int(time.time())}:R>"
-    connect_info = f"`/connect game.urt-30plus.org:{bot30.GAME_SERVER_PORT}`"
+    connect_info = f"`/connect game.urt-30plus.org:{settings.GAME_SERVER_PORT}`"
 
     if server:
         if game_type := server.game_type:
@@ -98,11 +98,11 @@ def create_server_embed(server: Server | None) -> discord.Embed:
 
 
 async def server_info() -> Server | None:
-    if not (rcon_pass := bot30.GAME_SERVER_RCON_PASS):
+    if not (rcon_pass := settings.GAME_SERVER_RCON_PASS):
         raise RuntimeError("GAME_SERVER_RCON_PASS")
     async with RCONClient(
-        host=bot30.GAME_SERVER_IP,
-        port=bot30.GAME_SERVER_PORT,
+        host=settings.GAME_SERVER_IP,
+        port=settings.GAME_SERVER_PORT,
         rcon_pass=rcon_pass,
     ) as c:
         try:
@@ -147,8 +147,8 @@ async def update_message_embed_periodically(
     message: discord.Message,
     server: Server | None,
 ) -> None:
-    delay = bot30.CURRENT_MAP_UPDATE_DELAY
-    stop_at = START_TICK + (bot30.BOT_MAX_RUN_TIME - delay - 1.5)
+    delay = settings.CURRENT_MAP_UPDATE_DELAY
+    stop_at = START_TICK + (settings.BOT_MAX_RUN_TIME - delay - 1.5)
     while time.monotonic() < stop_at:
         await asyncio.sleep(delay)
         prev_server = server
@@ -163,9 +163,9 @@ async def update_message_embed_periodically(
 
 
 async def update_current_map(client: Bot30Client) -> None:
-    await client.login(bot30.BOT_TOKEN)
-    channel_name = bot30.CHANNEL_NAME_MAPCYCLE
-    embed_title = bot30.CURRENT_MAP_EMBED_TITLE
+    await client.login(settings.BOT_TOKEN)
+    channel_name = settings.CHANNEL_NAME_MAPCYCLE
+    embed_title = settings.CURRENT_MAP_EMBED_TITLE
     channel_message, server = await asyncio.gather(
         client.fetch_embed_message(channel_name, embed_title),
         server_info(),
@@ -185,21 +185,21 @@ async def update_current_map(client: Bot30Client) -> None:
         # in case players are connected when we create the message, keep
         # updating it if needed
         _, message = await client.fetch_embed_message(
-            bot30.CHANNEL_NAME_MAPCYCLE, bot30.CURRENT_MAP_EMBED_TITLE
+            settings.CHANNEL_NAME_MAPCYCLE, settings.CURRENT_MAP_EMBED_TITLE
         )
         if message:
             await update_message_embed_periodically(message, server)
 
 
 async def async_main() -> None:
-    logger.info("Current Map Updater Start")
+    logger.info("Current Map Updater v%s Start", __version__)
 
-    client = Bot30Client(bot30.BOT_USER, bot30.BOT_SERVER_NAME)
+    client = Bot30Client(settings.BOT_USER, settings.BOT_SERVER_NAME)
     logger.info("%s", client)
     try:
         await asyncio.wait_for(
             update_current_map(client),
-            timeout=bot30.BOT_MAX_RUN_TIME,
+            timeout=settings.BOT_MAX_RUN_TIME,
         )
     except Exception:
         logger.exception("Failed to update current map")

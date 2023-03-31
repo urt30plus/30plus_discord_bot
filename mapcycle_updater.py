@@ -5,7 +5,7 @@ import time
 import aiofiles
 import discord
 
-import bot30
+from bot30 import __version__, settings
 from bot30.clients import Bot30Client
 from bot30.models import GameType
 
@@ -67,7 +67,7 @@ def create_mapcycle_embed(cycle: MapCycle) -> discord.Embed:
         descr = "*Unable to retrieve map cycle*"
         color = discord.Colour.red()
     embed = discord.Embed(
-        title=bot30.MAPCYCLE_EMBED_TITLE,
+        title=settings.MAPCYCLE_EMBED_TITLE,
         description=descr,
         colour=color,
     )
@@ -81,11 +81,11 @@ def create_mapcycle_embed(cycle: MapCycle) -> discord.Embed:
 
 
 async def create_embed() -> discord.Embed:
-    logger.info("Creating map cycle embed from: %s", bot30.MAPCYCLE_FILE)
+    logger.info("Creating map cycle embed from: %s", settings.MAPCYCLE_FILE)
     try:
-        cycle = await parse_mapcycle(bot30.MAPCYCLE_FILE)
+        cycle = await parse_mapcycle(settings.MAPCYCLE_FILE)
     except Exception:
-        logger.exception("Failed to parse map cycle file: %s", bot30.MAPCYCLE_FILE)
+        logger.exception("Failed to parse map cycle file: %s", settings.MAPCYCLE_FILE)
         cycle = {}
     return create_mapcycle_embed(cycle)
 
@@ -98,10 +98,10 @@ def should_update_embed(message: discord.Message, embed: discord.Embed) -> bool:
 
 
 async def update_mapcycle(client: Bot30Client) -> None:
-    await client.login(bot30.BOT_TOKEN)
+    await client.login(settings.BOT_TOKEN)
     channel_message, embed = await asyncio.gather(
         client.fetch_embed_message(
-            bot30.CHANNEL_NAME_MAPCYCLE, bot30.MAPCYCLE_EMBED_TITLE
+            settings.CHANNEL_NAME_MAPCYCLE, settings.MAPCYCLE_EMBED_TITLE
         ),
         create_embed(),
     )
@@ -118,9 +118,9 @@ async def update_mapcycle(client: Bot30Client) -> None:
 
 
 async def async_main() -> None:
-    logger.info("Map Cycle Updater Start")
+    logger.info("Map Cycle Updater v%s Start", __version__)
 
-    client = Bot30Client(bot30.BOT_USER, bot30.BOT_SERVER_NAME)
+    client = Bot30Client(settings.BOT_USER, settings.BOT_SERVER_NAME)
     logger.info("%s", client)
     try:
         await asyncio.wait_for(update_mapcycle(client), timeout=30)
