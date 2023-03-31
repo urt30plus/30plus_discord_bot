@@ -101,11 +101,7 @@ class Bot30Client(discord.Client):
         return channel, message
 
     def __str__(self) -> str:
-        return (
-            "Bot30Client("
-            f"bot_user={self.bot_user!r}, server={self.server_name!r}"
-            ")"
-        )
+        return f"Bot30Client(bot_user={self.bot_user!r}, server={self.server_name!r})"
 
 
 class RCONClientError(Exception):
@@ -113,7 +109,7 @@ class RCONClientError(Exception):
 
 
 class RCONClient:
-    CMD_PREFIX = b"\xFF" * 4
+    CMD_PREFIX = b"\xff" * 4
     REPLY_PREFIX = CMD_PREFIX + b"print\n"
     ENCODING = "latin-1"
 
