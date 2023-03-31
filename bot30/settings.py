@@ -1,6 +1,5 @@
 import logging
 import os
-import sys
 
 import dotenv
 
@@ -29,11 +28,7 @@ CURRENT_MAP_EMBED_TITLE = os.environ["CURRENT_MAP_EMBED_TITLE"]
 # Delay in fractional seconds between updates when there are players online
 CURRENT_MAP_UPDATE_DELAY = float(os.getenv("CURRENT_MAP_UPDATE_DELAY", "5.0"))
 
-logging.basicConfig(
-    format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
-    stream=sys.stdout,
-)
-
+logging.basicConfig(format="%(asctime)s [%(levelname)s] %(name)s: %(message)s")
 logging.getLogger("bot30").setLevel(LOG_LEVEL)
 logging.getLogger("asyncio_dgram").setLevel(LOG_LEVEL_ASYNC_DGRAM)
 logging.getLogger("discord").setLevel(LOG_LEVEL_DISCORD)
